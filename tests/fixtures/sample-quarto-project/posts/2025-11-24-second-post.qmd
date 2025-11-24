@@ -1,0 +1,14 @@
+---
+title: "Advanced Topics"
+description: "Diving deeper into the subject"
+author: ["John Doe", "Jane Smith"]
+date: "2025-11-24"
+image: "advanced.jpg"
+categories: ["Technology", "Advanced"]
+tags: ["deep-dive", "advanced"]
+---
+
+# Advanced Topics
+
+This post covers more advanced material.
+

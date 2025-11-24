@@ -1,0 +1,20 @@
+---
+title: "My First Post"
+description: "An introduction to my blog"
+author: "John Doe"
+date: "2025-11-24"
+date-modified: "2025-11-24"
+image: "featured.jpg"
+categories: ["Technology", "Web Development"]
+tags: ["astro", "quarto"]
+draft: false
+---
+
+# My First Post
+
+This is the content of my first post.
+
+## Section 1
+
+Some content here.
+
