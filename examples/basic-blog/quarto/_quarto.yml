@@ -1,0 +1,15 @@
+project:
+  type: website
+  output-dir: _site
+
+website:
+  title: "Astro + Quarto Blog"
+
+listing:
+  - id: blog-posts
+    contents: posts/*.qmd
+    sort: "date desc"
+    type: grid
+    categories: true
+    fields: [title, date, description, categories, image, author]
+

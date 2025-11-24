@@ -1,0 +1,80 @@
+---
+import { getCollection } from 'astro:content';
+
+const posts = await getCollection('blog');
+const sortedPosts = posts.sort((a, b) => 
+  b.data.pubDate.getTime() - a.data.pubDate.getTime()
+);
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Astro + Quarto Blog Example</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem;
+      line-height: 1.6;
+    }
+    h1 { color: #333; }
+    .posts { list-style: none; padding: 0; }
+    .post {
+      margin: 2rem 0;
+      padding: 1.5rem;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+    }
+    .post h2 { margin-top: 0; }
+    .post a { text-decoration: none; color: #0066cc; }
+    .post a:hover { text-decoration: underline; }
+    .meta { color: #666; font-size: 0.9rem; }
+    .categories {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+    .category {
+      background: #f0f0f0;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>🚀 Astro + Quarto Blog</h1>
+  <p>Welcome to this example blog built with <strong>Astro</strong> and <strong>Quarto</strong>!</p>
+  
+  <ul class="posts">
+    {sortedPosts.map(post => (
+      <li class="post">
+        <h2><a href={`/blog/${post.slug}`}>{post.data.title}</a></h2>
+        <div class="meta">
+          <time datetime={post.data.pubDate.toISOString()}>
+            {post.data.pubDate.toLocaleDateString('en-US', { 
+              year: 'numeric', 
+              month: 'long', 
+              day: 'numeric' 
+            })}
+          </time>
+          {post.data.author && <span> • by {post.data.author}</span>}
+        </div>
+        {post.data.description && <p>{post.data.description}</p>}
+        {post.data.categories && (
+          <div class="categories">
+            {post.data.categories.map(cat => (
+              <span class="category">{cat}</span>
+            ))}
+          </div>
+        )}
+      </li>
+    ))}
+  </ul>
+</body>
+</html>
+

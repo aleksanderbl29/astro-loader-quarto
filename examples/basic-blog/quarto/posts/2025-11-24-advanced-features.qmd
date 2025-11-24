@@ -1,0 +1,47 @@
+---
+title: "Advanced Features"
+description: "Exploring the advanced capabilities of this integration"
+author: ["Jane Doe", "John Smith"]
+date: "2025-11-24"
+image: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=800"
+categories: ["Tutorial", "Advanced"]
+tags: ["features", "advanced"]
+---
+
+# Advanced Features
+
+This post demonstrates some advanced features of the Astro + Quarto integration.
+
+## Multiple Authors
+
+Notice this post has multiple authors, which is automatically handled by the loader.
+
+## Field Mapping
+
+The loader automatically maps Quarto fields to Astro conventions:
+
+- `date` → `pubDate`
+- `date-modified` → `updatedDate`
+- `image` → `heroImage`
+
+## Code Examples
+
+```python
+def hello_world():
+    print("Hello from Quarto!")
+```
+
+## Math Support
+
+When rendered by Quarto, you can include mathematical notation:
+
+$$
+E = mc^2
+$$
+
+## Callouts
+
+::: {.callout-note}
+This is a Quarto callout block that will be rendered when you run `quarto render`.
+:::
+
