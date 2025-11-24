@@ -43,6 +43,8 @@ project:
   type: website
   output-dir: _site
 
+format: gfm  # REQUIRED: GitHub Flavored Markdown for Astro compatibility
+
 listing:
   - id: blog-posts
     contents: posts/*.qmd
@@ -86,7 +88,13 @@ const blog = defineCollection({
 export const collections = { blog };
 ```
 
-### 3. Use in your Astro pages
+### 3. Render Quarto content
+
+```bash
+cd quarto && quarto render
+```
+
+### 4. Use in your Astro pages
 
 ```astro
 ---
@@ -102,6 +110,7 @@ export async function getStaticPaths() {
 }
 
 const { post } = Astro.props;
+const { Content } = await post.render();  // Render markdown content
 ---
 
 <article>
@@ -112,9 +121,7 @@ const { post } = Astro.props;
   <time datetime={post.data.pubDate.toISOString()}>
     {post.data.pubDate.toLocaleDateString()}
   </time>
-  <div class="content">
-    {/* Your content */}
-  </div>
+  <Content />  <!-- Rendered Quarto markdown content -->
 </article>
 ```
 
@@ -241,17 +248,40 @@ const blog = defineCollection({
 
 ## Development Workflow
 
-### Option 1: Separate Terminals (Recommended)
+### Option 1: Manual Render (Recommended)
+
+Run Quarto and Astro separately:
 
 ```bash
-# Terminal 1: Quarto preview with auto-reload
+# Terminal 1: Quarto preview (auto-renders on save)
 cd quarto && quarto preview
 
 # Terminal 2: Astro dev server
 npm run dev
 ```
 
-### Option 2: Parallel with npm-run-all
+### Option 2: Auto-Render (Good for CI/CD)
+
+Let the loader automatically render Quarto content:
+
+```typescript
+// src/content/config.ts
+const blog = defineCollection({
+  loader: quartoLoader({
+    quartoRoot: './quarto',
+    listings: 'blog-posts',
+    autoRender: true,  // Automatically runs 'quarto render'
+  })
+});
+```
+
+Then just run:
+
+```bash
+npm run dev
+```
+
+### Option 3: Parallel with npm-run-all
 
 ```json
 {

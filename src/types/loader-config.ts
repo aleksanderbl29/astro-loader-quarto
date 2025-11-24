@@ -62,11 +62,30 @@ export interface QuartoLoaderConfig {
 
   /**
    * Auto-render Quarto content before loading
+   * @default false
+   * 
+   * When false (default): User must run 'quarto render' separately
+   * When true: Automatically runs 'quarto render' with GFM format
+   * When object: Customize the render command and options
+   * 
+   * @example
+   * // Simple enable
+   * autoRender: true
+   * 
+   * @example
+   * // Custom options
+   * autoRender: {
+   *   enabled: true,
+   *   command: 'quarto',
+   *   args: ['render', '--quiet'],
+   *   format: 'gfm'
+   * }
    */
   autoRender?: boolean | {
+    enabled: boolean;
     command?: string;
     args?: string[];
-    watch?: boolean;
+    format?: string;
   };
 
   /**

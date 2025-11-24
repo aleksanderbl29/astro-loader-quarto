@@ -1,0 +1,31 @@
+---
+title: "Welcome to Astro + Quarto"
+description: "Combining the power of Quarto's scientific publishing with Astro's modern web framework"
+author: "Jane Doe"
+date: "2024-01-15"
+date-modified: "2024-01-16"
+categories: ["Introduction", "Tutorial"]
+tags: ["astro", "quarto", "web-development"]
+---
+
+# Welcome!
+
+This is an example blog post written in Quarto and displayed in an Astro site.
+
+## Why Astro + Quarto?
+
+- **Quarto** provides excellent tools for technical and scientific writing
+- **Astro** offers a fast, modern web framework
+- Together, they create a powerful content publishing platform
+
+## Features
+
+1. Write content in `.qmd` format with full Quarto support
+2. Automatic field mapping to Astro conventions
+3. Type-safe content collections
+4. Hot reload during development
+
+## Getting Started
+
+Check out the other posts to see more examples!
+

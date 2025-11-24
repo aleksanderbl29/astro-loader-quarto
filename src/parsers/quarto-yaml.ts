@@ -91,3 +91,60 @@ export function getListingIds(config: QuartoConfig): string[] {
   return listings.map(l => l.id);
 }
 
+/**
+ * Validate that Quarto is configured for GFM format
+ * Provides warnings if format is not set to 'gfm'
+ */
+export function validateQuartoFormat(
+  config: QuartoConfig,
+  logger?: { warn: (msg: string) => void }
+): void {
+  // Check project-level format
+  const projectFormat = (config as any).format;
+  
+  if (!projectFormat) {
+    if (logger) {
+      logger.warn(
+        'No format specified in _quarto.yml. ' +
+        'For Astro compatibility, add "format: gfm" to your Quarto configuration.'
+      );
+    }
+    return;
+  }
+  
+  // Handle various format configurations
+  const formatValue = typeof projectFormat === 'string' 
+    ? projectFormat 
+    : typeof projectFormat === 'object' && 'gfm' in projectFormat
+      ? 'gfm'
+      : null;
+  
+  if (formatValue !== 'gfm' && logger) {
+    logger.warn(
+      `Quarto format is '${projectFormat}' but 'gfm' is recommended for Astro compatibility. ` +
+      `Add "format: gfm" to _quarto.yml or individual documents.`
+    );
+  }
+}
+
+/**
+ * Check if Quarto format is configured correctly for Astro
+ */
+export function isGfmFormatConfigured(config: QuartoConfig): boolean {
+  const projectFormat = (config as any).format;
+  
+  if (!projectFormat) {
+    return false;
+  }
+  
+  if (typeof projectFormat === 'string') {
+    return projectFormat === 'gfm';
+  }
+  
+  if (typeof projectFormat === 'object') {
+    return 'gfm' in projectFormat;
+  }
+  
+  return false;
+}
+

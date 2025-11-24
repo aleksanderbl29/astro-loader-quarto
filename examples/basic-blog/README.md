@@ -36,6 +36,8 @@ quarto render
 cd ..
 ```
 
+Note: This step is required because autoRender is disabled by default. The Quarto project is configured with `format: gfm` to generate GitHub Flavored Markdown that Astro can render.
+
 3. Start Astro dev server:
 
 ```bash

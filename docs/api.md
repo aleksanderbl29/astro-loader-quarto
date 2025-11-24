@@ -18,6 +18,7 @@ Main configuration interface for the loader.
 interface QuartoLoaderConfig {
   quartoRoot: string;
   outputDir?: string;
+  autoRender?: boolean | object;
   listings?: string | string[] | 'all';
   fieldMappings?: FieldMappings;
   schema?: SchemaConfig;
@@ -28,6 +29,8 @@ interface QuartoLoaderConfig {
   parallel?: boolean;
 }
 ```
+
+**Important**: Quarto must be configured with `format: gfm` in `_quarto.yml` for Astro compatibility.
 
 #### Properties
 
@@ -48,13 +51,42 @@ Path to the Quarto project source directory (where `_quarto.yml` is located).
 **Type:** `string`  
 **Default:** Value from `project.output-dir` in `_quarto.yml` or `'_site'`
 
-Path to the rendered Quarto output directory.
+Path to the rendered Quarto output directory where `.md` files are generated.
 
 ```typescript
 {
   outputDir: '_site'
 }
 ```
+
+##### `autoRender`
+
+**Type:** `boolean | { enabled: boolean; command?: string; args?: string[]; format?: string }`  
+**Default:** `false`
+
+Auto-render Quarto content before loading. When disabled (default), you must run `quarto render` separately.
+
+```typescript
+// Simple enable
+{
+  autoRender: true
+}
+
+// Custom options
+{
+  autoRender: {
+    enabled: true,
+    command: 'quarto',
+    args: ['render', '--quiet'],
+    format: 'gfm'
+  }
+}
+```
+
+**Workflow Options:**
+- `false` (default): User runs `quarto render` separately (recommended for dev)
+- `true`: Automatically runs `quarto render` with GFM format
+- object: Custom render configuration
 
 ##### `listings`
 

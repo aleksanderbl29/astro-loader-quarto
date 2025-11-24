@@ -10,6 +10,7 @@ export async function getStaticPaths() {
 }
 
 const { post } = Astro.props;
+const { Content } = await post.render();  // Render Quarto markdown content
 ---
 
 <!DOCTYPE html>
@@ -62,6 +63,37 @@ const { post } = Astro.props;
       text-decoration: none;
     }
     .back:hover { text-decoration: underline; }
+    
+    /* Styles for rendered markdown content */
+    .content {
+      font-size: 1.05rem;
+    }
+    .content h2 {
+      margin-top: 2rem;
+      color: #444;
+    }
+    .content code {
+      background: #f4f4f4;
+      padding: 0.2rem 0.4rem;
+      border-radius: 3px;
+      font-size: 0.9em;
+    }
+    .content pre {
+      background: #f4f4f4;
+      padding: 1rem;
+      border-radius: 5px;
+      overflow-x: auto;
+    }
+    .content pre code {
+      background: none;
+      padding: 0;
+    }
+    .content blockquote {
+      border-left: 4px solid #ddd;
+      margin-left: 0;
+      padding-left: 1rem;
+      color: #666;
+    }
   </style>
 </head>
 <body>
@@ -109,8 +141,7 @@ const { post } = Astro.props;
     )}
     
     <div class="content">
-      <p><em>Note: In a real application, you would render the Quarto content here.</em></p>
-      <p>This example demonstrates the content collection integration. The actual Quarto content would be rendered from the generated HTML or processed markdown.</p>
+      <Content />  <!-- Rendered Quarto markdown content -->
     </div>
   </article>
 </body>

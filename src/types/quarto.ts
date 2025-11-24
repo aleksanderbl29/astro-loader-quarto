@@ -91,3 +91,13 @@ export interface ResolvedListing {
   defaults: Record<string, unknown>;
 }
 
+/**
+ * Resolved content with source and output paths
+ */
+export interface ResolvedContent {
+  qmdPath: string;    // Source .qmd file
+  mdPath: string;     // Rendered .md file
+  metadata: ParsedMetadata;
+  body: string;       // Markdown content
+}
+
