@@ -1,5 +1,7 @@
 # astro-loader-quarto
 
+> THIS PROJECT IS WORK IN PROGRESS. DO NOT USE.
+
 > Astro Loader for Quarto content collections with full type safety and field mapping
 
 [![npm version](https://badge.fury.io/js/astro-loader-quarto.svg)](https://www.npmjs.com/package/astro-loader-quarto)
