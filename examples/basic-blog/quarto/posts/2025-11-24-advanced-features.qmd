@@ -47,5 +47,5 @@ This is a Quarto callout block that will be rendered when you run `quarto render
 
 ```{r}
 library(tidyverse)
-plot(mtcars$hwy)
+plot(mtcars$mpg)
 ```

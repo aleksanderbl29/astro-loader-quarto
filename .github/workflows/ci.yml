@@ -9,76 +9,133 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    
+
     strategy:
       matrix:
         node-version: [18.x, 20.x, 22.x]
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-      
+
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
           version: 9
-      
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      
+
       - name: Run type checking
         run: pnpm run typecheck
-      
+
       - name: Run linter
         run: pnpm run lint
         continue-on-error: true
-      
+
       - name: Run tests
         run: pnpm test
-      
+
       - name: Build package
         run: pnpm run build
-  
+
   build-example:
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Use Node.js 20.x
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20.x
-      
+
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
           version: 9
-      
+
+      - name: Use Node.js 22.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: 'pnpm'
+
+      - name: Setup R
+        uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: '4.5'
+          use-public-rspm: true
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y \
+            libcurl4-openssl-dev \
+            libssl-dev \
+            libxml2-dev \
+            libfontconfig1-dev \
+            libfreetype6-dev \
+            libfribidi-dev \
+            libharfbuzz-dev \
+            libjpeg-dev \
+            libpng-dev \
+            libtiff5-dev \
+            libgit2-dev \
+            default-libmysqlclient-dev \
+            libpq-dev \
+            libsqlite3-dev \
+            libssh2-1-dev \
+            unixodbc-dev
+
+      - name: Cache renv packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/R/renv
+            examples/basic-blog/quarto/renv/library
+          key: ${{ runner.os }}-renv-${{ hashFiles('examples/basic-blog/quarto/renv.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-renv-
+
+      - name: Install renv
+        shell: Rscript {0}
+        run: |
+          if (!requireNamespace("renv", quietly = TRUE)) {
+            install.packages("renv", repos = "https://cloud.r-project.org")
+          }
+
+      - name: Restore renv packages
+        working-directory: examples/basic-blog/quarto
+        shell: Rscript {0}
+        env:
+          RENV_PROJECT: ${{ github.workspace }}/examples/basic-blog/quarto
+        run: |
+          project <- Sys.getenv("RENV_PROJECT", unset = getwd())
+          if (!file.exists(file.path(project, "renv.lock"))) {
+            stop("renv.lock not found at: ", project)
+          }
+          renv::restore(project = project)
+
       - name: Set up Quarto
         uses: quarto-dev/quarto-actions/setup@v2
-        with:
-          version: 1.4.550
-      
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      
+
       - name: Build package
         run: pnpm run build
-      
+
       - name: Install example dependencies
         working-directory: examples/basic-blog
-        run: npm install
-      
+        run: pnpm install --frozen-lockfile
+
       - name: Render Quarto content
-        working-directory: examples/basic-blog
-        run: quarto render quarto
-      
+        working-directory: examples/basic-blog/quarto
+        env:
+          RENV_PROJECT: ${{ github.workspace }}/examples/basic-blog/quarto
+        run: quarto render .
+
       - name: Build example site
         working-directory: examples/basic-blog
-        run: npm run build
+        run: pnpm run build
 

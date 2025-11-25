@@ -12,7 +12,8 @@
   },
   "dependencies": {
     "astro": "^5.16.0",
-    "astro-loader-quarto": "file:../.."
+    "astro-loader-quarto": "file:../..",
+    "sharp": "^0.34.5"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.5",
