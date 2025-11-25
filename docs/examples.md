@@ -35,14 +35,14 @@ listing:
 
 ```typescript
 // src/content/config.ts
-import { defineCollection } from 'astro:content';
-import { quartoLoader } from 'astro-loader-quarto';
+import { defineCollection } from "astro:content";
+import { quartoLoader } from "astro-loader-quarto";
 
 const blog = defineCollection({
   loader: quartoLoader({
-    quartoRoot: './quarto',
-    listings: 'blog-posts',
-  })
+    quartoRoot: "./quarto",
+    listings: "blog-posts",
+  }),
 });
 
 export const collections = { blog };
@@ -57,7 +57,7 @@ import { getCollection } from 'astro:content';
 import Layout from '@/layouts/Layout.astro';
 
 const posts = await getCollection('blog');
-const sortedPosts = posts.sort((a, b) => 
+const sortedPosts = posts.sort((a, b) =>
   b.data.pubDate.getTime() - a.data.pubDate.getTime()
 );
 ---
@@ -125,11 +125,11 @@ listing:
   - id: blog-posts
     contents: posts/*.qmd
     sort: "date desc"
-  
+
   - id: documentation
     contents: docs/**/*.qmd
     sort: "title"
-  
+
   - id: projects
     contents: projects/*.qmd
     sort: "date desc"
@@ -139,37 +139,37 @@ listing:
 
 ```typescript
 // src/content/config.ts
-import { defineCollection } from 'astro:content';
-import { quartoLoader } from 'astro-loader-quarto';
+import { defineCollection } from "astro:content";
+import { quartoLoader } from "astro-loader-quarto";
 
 const blog = defineCollection({
   loader: quartoLoader({
-    quartoRoot: './quarto',
-    listings: 'blog-posts',
-  })
+    quartoRoot: "./quarto",
+    listings: "blog-posts",
+  }),
 });
 
 const docs = defineCollection({
   loader: quartoLoader({
-    quartoRoot: './quarto',
-    listings: 'documentation',
+    quartoRoot: "./quarto",
+    listings: "documentation",
     fieldMappings: {
-      'date': 'lastModified',
-      'version': 'version',
-    }
-  })
+      date: "lastModified",
+      version: "version",
+    },
+  }),
 });
 
 const projects = defineCollection({
   loader: quartoLoader({
-    quartoRoot: './quarto',
-    listings: 'projects',
+    quartoRoot: "./quarto",
+    listings: "projects",
     fieldMappings: {
-      'date': 'completedDate',
-      'client': 'clientName',
-      'tech-stack': 'technologies',
-    }
-  })
+      date: "completedDate",
+      client: "clientName",
+      "tech-stack": "technologies",
+    },
+  }),
 });
 
 export const collections = { blog, docs, projects };
@@ -196,17 +196,17 @@ video-url: "https://example.com/video.mp4"
 // src/content/config.ts
 const tutorials = defineCollection({
   loader: quartoLoader({
-    quartoRoot: './quarto',
-    listings: 'tutorials',
+    quartoRoot: "./quarto",
+    listings: "tutorials",
     fieldMappings: {
-      'date': 'publishedAt',
-      'subtitle': 'summary',
-      'difficulty': 'level',
-      'reading-time': 'readingMinutes',
-      'prerequisites': 'requires',
-      'video-url': 'videoLink',
-    }
-  })
+      date: "publishedAt",
+      subtitle: "summary",
+      difficulty: "level",
+      "reading-time": "readingMinutes",
+      prerequisites: "requires",
+      "video-url": "videoLink",
+    },
+  }),
 });
 ```
 
@@ -217,13 +217,13 @@ const tutorials = defineCollection({
 ```typescript
 const blog = defineCollection({
   loader: quartoLoader({
-    quartoRoot: './quarto',
-    listings: 'blog-posts',
+    quartoRoot: "./quarto",
+    listings: "blog-posts",
     filter: (entry) => {
       // Exclude drafts
       return entry.draft !== true;
-    }
-  })
+    },
+  }),
 });
 ```
 
@@ -232,14 +232,14 @@ const blog = defineCollection({
 ```typescript
 const blog = defineCollection({
   loader: quartoLoader({
-    quartoRoot: './quarto',
-    listings: 'blog-posts',
+    quartoRoot: "./quarto",
+    listings: "blog-posts",
     filter: (entry) => {
       // Only published posts, not scheduled for future
       const now = new Date();
       return !entry.draft && new Date(entry.pubDate) <= now;
-    }
-  })
+    },
+  }),
 });
 ```
 
@@ -248,13 +248,13 @@ const blog = defineCollection({
 ```typescript
 const techBlog = defineCollection({
   loader: quartoLoader({
-    quartoRoot: './quarto',
-    listings: 'blog-posts',
+    quartoRoot: "./quarto",
+    listings: "blog-posts",
     filter: (entry) => {
       // Only tech-related posts
-      return entry.categories?.includes('Technology');
-    }
-  })
+      return entry.categories?.includes("Technology");
+    },
+  }),
 });
 ```
 
@@ -263,8 +263,8 @@ const techBlog = defineCollection({
 ```typescript
 const featured = defineCollection({
   loader: quartoLoader({
-    quartoRoot: './quarto',
-    listings: 'blog-posts',
+    quartoRoot: "./quarto",
+    listings: "blog-posts",
     filter: (entry) => {
       // Featured, published, high-quality posts
       return (
@@ -273,8 +273,8 @@ const featured = defineCollection({
         new Date(entry.pubDate) <= new Date() &&
         entry.readingTime >= 5
       );
-    }
-  })
+    },
+  }),
 });
 ```
 
@@ -283,14 +283,14 @@ const featured = defineCollection({
 ```typescript
 const validated = defineCollection({
   loader: quartoLoader({
-    quartoRoot: './quarto',
-    listings: 'blog-posts',
+    quartoRoot: "./quarto",
+    listings: "blog-posts",
     filter: async (entry) => {
       // Validate against external API
       const isValid = await validateContent(entry.id);
       return isValid && !entry.draft;
-    }
-  })
+    },
+  }),
 });
 ```
 
@@ -301,39 +301,41 @@ const validated = defineCollection({
 ```typescript
 const blog = defineCollection({
   loader: quartoLoader({
-    quartoRoot: './quarto',
-    listings: 'blog-posts',
+    quartoRoot: "./quarto",
+    listings: "blog-posts",
     transform: (entry) => ({
       ...entry,
       year: new Date(entry.pubDate).getFullYear(),
-      month: new Date(entry.pubDate).toLocaleDateString('en', { month: 'long' }),
+      month: new Date(entry.pubDate).toLocaleDateString("en", {
+        month: "long",
+      }),
       excerpt: entry.description || generateExcerpt(entry.content),
-    })
-  })
+    }),
+  }),
 });
 ```
 
 ### Process Content
 
 ```typescript
-import { calculateReadingTime, extractHeadings } from './utils';
+import { calculateReadingTime, extractHeadings } from "./utils";
 
 const blog = defineCollection({
   loader: quartoLoader({
-    quartoRoot: './quarto',
-    listings: 'blog-posts',
+    quartoRoot: "./quarto",
+    listings: "blog-posts",
     transform: (entry) => {
-      const readingTime = calculateReadingTime(entry.content || '');
-      const headings = extractHeadings(entry.content || '');
-      
+      const readingTime = calculateReadingTime(entry.content || "");
+      const headings = extractHeadings(entry.content || "");
+
       return {
         ...entry,
         readingTime,
         headings,
-        wordCount: (entry.content || '').split(/\s+/).length,
+        wordCount: (entry.content || "").split(/\s+/).length,
       };
-    }
-  })
+    },
+  }),
 });
 ```
 
@@ -342,18 +344,18 @@ const blog = defineCollection({
 ```typescript
 const blog = defineCollection({
   loader: quartoLoader({
-    quartoRoot: './quarto',
-    listings: 'blog-posts',
+    quartoRoot: "./quarto",
+    listings: "blog-posts",
     transform: (entry) => ({
       ...entry,
       // Ensure author is always an array
       authors: Array.isArray(entry.author) ? entry.author : [entry.author],
       // Normalize tags to lowercase
-      tags: entry.tags?.map(tag => tag.toLowerCase()),
+      tags: entry.tags?.map((tag) => tag.toLowerCase()),
       // Add default image if none provided
-      heroImage: entry.heroImage || '/images/default-hero.jpg',
-    })
-  })
+      heroImage: entry.heroImage || "/images/default-hero.jpg",
+    }),
+  }),
 });
 ```
 
@@ -362,21 +364,21 @@ const blog = defineCollection({
 ```typescript
 const blog = defineCollection({
   loader: quartoLoader({
-    quartoRoot: './quarto',
-    listings: 'blog-posts',
+    quartoRoot: "./quarto",
+    listings: "blog-posts",
     transform: async (entry) => {
       // Fetch additional data from API
       const authorInfo = await fetchAuthorInfo(entry.author);
       const relatedPosts = await findRelatedPosts(entry.categories);
-      
+
       return {
         ...entry,
         authorBio: authorInfo.bio,
         authorAvatar: authorInfo.avatar,
-        relatedPosts: relatedPosts.map(p => p.id),
+        relatedPosts: relatedPosts.map((p) => p.id),
       };
-    }
-  })
+    },
+  }),
 });
 ```
 
@@ -385,54 +387,54 @@ const blog = defineCollection({
 ### Extend Base Schema
 
 ```typescript
-import { z } from 'zod';
+import { z } from "zod";
 
 const blog = defineCollection({
   loader: quartoLoader({
-    quartoRoot: './quarto',
-    listings: 'blog-posts',
+    quartoRoot: "./quarto",
+    listings: "blog-posts",
     schema: {
       extend: z.object({
         readingTime: z.number().min(1),
         featured: z.boolean().default(false),
         seoTitle: z.string().max(60).optional(),
         seoDescription: z.string().max(160).optional(),
-      })
-    }
-  })
+      }),
+    },
+  }),
 });
 ```
 
 ### Strict Schema
 
 ```typescript
-import { z } from 'zod';
+import { z } from "zod";
 
 const tutorials = defineCollection({
   loader: quartoLoader({
-    quartoRoot: './quarto',
-    listings: 'tutorials',
+    quartoRoot: "./quarto",
+    listings: "tutorials",
     schema: {
       extend: z.object({
-        level: z.enum(['beginner', 'intermediate', 'advanced']),
+        level: z.enum(["beginner", "intermediate", "advanced"]),
         readingMinutes: z.number().int().positive(),
         requires: z.array(z.string()).min(1),
         videoLink: z.string().url().optional(),
-      })
-    }
-  })
+      }),
+    },
+  }),
 });
 ```
 
 ### Override Schema Completely
 
 ```typescript
-import { z } from 'zod';
+import { z } from "zod";
 
 const custom = defineCollection({
   loader: quartoLoader({
-    quartoRoot: './quarto',
-    listings: 'custom',
+    quartoRoot: "./quarto",
+    listings: "custom",
     schema: {
       override: z.object({
         // Completely custom schema
@@ -440,9 +442,9 @@ const custom = defineCollection({
         name: z.string(),
         value: z.number(),
         active: z.boolean(),
-      })
-    }
-  })
+      }),
+    },
+  }),
 });
 ```
 
@@ -453,32 +455,32 @@ const custom = defineCollection({
 ```typescript
 const blog = defineCollection({
   loader: quartoLoader({
-    quartoRoot: './quarto',
-    listings: 'blog-posts',
+    quartoRoot: "./quarto",
+    listings: "blog-posts",
     assets: {
-      strategy: 'reference',
-    }
-  })
+      strategy: "reference",
+    },
+  }),
 });
 ```
 
 ### Custom Image Resolver
 
 ```typescript
-import { basename } from 'path';
+import { basename } from "path";
 
 const blog = defineCollection({
   loader: quartoLoader({
-    quartoRoot: './quarto',
-    listings: 'blog-posts',
+    quartoRoot: "./quarto",
+    listings: "blog-posts",
     assets: {
-      strategy: 'reference',
+      strategy: "reference",
       imageResolver: (imagePath, qmdPath) => {
         // Move all images to /images/blog/
         return `/images/blog/${basename(imagePath)}`;
-      }
-    }
-  })
+      },
+    },
+  }),
 });
 ```
 
@@ -487,18 +489,18 @@ const blog = defineCollection({
 ```typescript
 const blog = defineCollection({
   loader: quartoLoader({
-    quartoRoot: './quarto',
-    listings: 'blog-posts',
+    quartoRoot: "./quarto",
+    listings: "blog-posts",
     assets: {
       imageResolver: (imagePath, qmdPath) => {
         // Use CDN for all images
-        if (!imagePath.startsWith('http')) {
+        if (!imagePath.startsWith("http")) {
           return `https://cdn.example.com/blog/${imagePath}`;
         }
         return imagePath;
-      }
-    }
-  })
+      },
+    },
+  }),
 });
 ```
 
@@ -509,29 +511,29 @@ const blog = defineCollection({
 ```typescript
 const blog = defineCollection({
   loader: quartoLoader({
-    quartoRoot: './quarto',
-    listings: 'blog-posts',
-    
+    quartoRoot: "./quarto",
+    listings: "blog-posts",
+
     // First: filter
     filter: (entry) => {
       return !entry.draft && new Date(entry.pubDate) <= new Date();
     },
-    
+
     // Then: transform
     transform: (entry) => ({
       ...entry,
       readingTime: calculateReadingTime(entry.content),
       year: new Date(entry.pubDate).getFullYear(),
     }),
-    
+
     // Finally: extend schema for new fields
     schema: {
       extend: z.object({
         readingTime: z.number(),
         year: z.number(),
-      })
-    }
-  })
+      }),
+    },
+  }),
 });
 ```
 
@@ -540,26 +542,26 @@ const blog = defineCollection({
 ```typescript
 const blogEn = defineCollection({
   loader: quartoLoader({
-    quartoRoot: './quarto',
-    listings: 'blog-en',
+    quartoRoot: "./quarto",
+    listings: "blog-en",
     transform: (entry) => ({
       ...entry,
-      lang: 'en',
-      locale: 'en-US',
-    })
-  })
+      lang: "en",
+      locale: "en-US",
+    }),
+  }),
 });
 
 const blogEs = defineCollection({
   loader: quartoLoader({
-    quartoRoot: './quarto',
-    listings: 'blog-es',
+    quartoRoot: "./quarto",
+    listings: "blog-es",
     transform: (entry) => ({
       ...entry,
-      lang: 'es',
-      locale: 'es-ES',
-    })
-  })
+      lang: "es",
+      locale: "es-ES",
+    }),
+  }),
 });
 
 export const collections = { blogEn, blogEs };
@@ -574,10 +576,10 @@ import { getCollection } from 'astro:content';
 
 export async function getStaticPaths({ paginate }) {
   const posts = await getCollection('blog');
-  const sortedPosts = posts.sort((a, b) => 
+  const sortedPosts = posts.sort((a, b) =>
     b.data.pubDate.getTime() - a.data.pubDate.getTime()
   );
-  
+
   return paginate(sortedPosts, { pageSize: 10 });
 }
 
@@ -603,17 +605,17 @@ import { getCollection } from 'astro:content';
 
 export async function getStaticPaths() {
   const posts = await getCollection('blog');
-  
+
   // Get all unique categories
   const categories = [...new Set(
     posts.flatMap(post => post.data.categories || [])
   )];
-  
+
   return categories.map(category => ({
     params: { category: category.toLowerCase() },
     props: {
       category,
-      posts: posts.filter(post => 
+      posts: posts.filter(post =>
         post.data.categories?.includes(category)
       )
     }
@@ -635,17 +637,17 @@ const { category, posts } = Astro.props;
 
 ```typescript
 // src/pages/rss.xml.ts
-import rss from '@astrojs/rss';
-import { getCollection } from 'astro:content';
+import rss from "@astrojs/rss";
+import { getCollection } from "astro:content";
 
 export async function GET(context) {
-  const posts = await getCollection('blog');
-  
+  const posts = await getCollection("blog");
+
   return rss({
-    title: 'My Blog',
-    description: 'A blog built with Astro and Quarto',
+    title: "My Blog",
+    description: "A blog built with Astro and Quarto",
     site: context.site,
-    items: posts.map(post => ({
+    items: posts.map((post) => ({
       title: post.data.title,
       pubDate: post.data.pubDate,
       description: post.data.description,
@@ -658,4 +660,3 @@ export async function GET(context) {
 ## Complete Example
 
 See [examples/basic-blog](../examples/basic-blog) for a fully working example project.
-

@@ -2,8 +2,8 @@
  * Schema validator for parsed entries
  */
 
-import type { z } from 'zod';
-import { ValidationError } from '../utils/errors.js';
+import type { z } from "zod";
+import { ValidationError } from "../utils/errors.js";
 
 /**
  * Validation result
@@ -20,23 +20,23 @@ export interface ValidationResult {
 export function validateEntry(
   entry: Record<string, unknown>,
   schema: z.ZodObject<any>,
-  _filePath?: string
+  _filePath?: string,
 ): ValidationResult {
   const result = schema.safeParse(entry);
-  
+
   if (result.success) {
     return {
       success: true,
       data: result.data,
     };
   }
-  
+
   // Format Zod errors
-  const errors = result.error.errors.map(err => ({
-    field: err.path.join('.'),
+  const errors = result.error.errors.map((err) => ({
+    field: err.path.join("."),
     message: err.message,
   }));
-  
+
   return {
     success: false,
     errors,
@@ -49,18 +49,18 @@ export function validateEntry(
 export function validateEntryOrThrow(
   entry: Record<string, unknown>,
   schema: z.ZodObject<any>,
-  filePath?: string
+  filePath?: string,
 ): Record<string, unknown> {
   const result = validateEntry(entry, schema, filePath);
-  
+
   if (!result.success) {
     throw new ValidationError(
-      'Entry validation failed',
+      "Entry validation failed",
       filePath,
-      result.errors
+      result.errors,
     );
   }
-  
+
   return result.data!;
 }
 
@@ -69,9 +69,9 @@ export function validateEntryOrThrow(
  */
 export function validateEntries(
   entries: Array<{ data: Record<string, unknown>; path: string }>,
-  schema: z.ZodObject<any>
+  schema: z.ZodObject<any>,
 ): Array<ValidationResult & { path: string }> {
-  return entries.map(entry => ({
+  return entries.map((entry) => ({
     path: entry.path,
     ...validateEntry(entry.data, schema, entry.path),
   }));
@@ -81,13 +81,12 @@ export function validateEntries(
  * Collect all validation errors
  */
 export function collectValidationErrors(
-  results: Array<ValidationResult & { path: string }>
+  results: Array<ValidationResult & { path: string }>,
 ): Array<{ path: string; errors: Array<{ field: string; message: string }> }> {
   return results
-    .filter(r => !r.success)
-    .map(r => ({
+    .filter((r) => !r.success)
+    .map((r) => ({
       path: r.path,
       errors: r.errors || [],
     }));
 }
-

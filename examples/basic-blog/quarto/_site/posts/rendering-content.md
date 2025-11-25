@@ -1,4 +1,5 @@
 # Content Rendering with Astro
+
 Jane Doe
 2024-01-20
 
@@ -15,7 +16,7 @@ This post demonstrates how Quarto content is rendered in Astro.
 
 ## Code Example
 
-``` typescript
+```typescript
 const { post } = Astro.props;
 const { Content } = await post.render();
 ```
@@ -25,13 +26,13 @@ const { Content } = await post.render();
 All standard markdown features work:
 
 - **Bold text**
-- *Italic text*
+- _Italic text_
 - `Code inline`
 - [Links](https://astro.build)
 
 ### Code Blocks
 
-``` javascript
+```javascript
 function hello() {
   console.log("Hello from Quarto!");
 }

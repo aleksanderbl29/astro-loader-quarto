@@ -12,10 +12,9 @@ listing:
     type: grid
     categories: true
     fields: [title, date, description, categories, image]
-  
+
   - id: tutorials
     contents: tutorials/*.qmd
     sort: "title"
     type: table
     fields: [title, date, description]
-

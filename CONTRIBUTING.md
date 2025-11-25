@@ -223,10 +223,10 @@ describe('Feature Name', () => {
     it('should do something specific', () => {
       // Arrange
       const input = ...;
-      
+
       // Act
       const result = functionUnderTest(input);
-      
+
       // Assert
       expect(result).toBe(expected);
     });
@@ -256,6 +256,7 @@ describe('Feature Name', () => {
 ### Bug Reports
 
 Include:
+
 - Clear description
 - Steps to reproduce
 - Expected vs actual behavior
@@ -265,6 +266,7 @@ Include:
 ### Feature Requests
 
 Include:
+
 - Use case / problem to solve
 - Proposed solution
 - Alternative solutions considered
@@ -279,4 +281,3 @@ Include:
 ## License
 
 By contributing, you agree that your contributions will be licensed under the GPL-3.0 License.
-

@@ -19,11 +19,13 @@ interface QuartoLoaderConfig {
   quartoRoot: string;
   outputDir?: string;
   autoRender?: boolean | object;
-  listings?: string | string[] | 'all';
+  listings?: string | string[] | "all";
   fieldMappings?: FieldMappings;
   schema?: SchemaConfig;
   filter?: (entry: Record<string, unknown>) => boolean | Promise<boolean>;
-  transform?: (entry: Record<string, unknown>) => Record<string, unknown> | Promise<Record<string, unknown>>;
+  transform?: (
+    entry: Record<string, unknown>,
+  ) => Record<string, unknown> | Promise<Record<string, unknown>>;
   assets?: AssetConfig;
   cache?: boolean;
   parallel?: boolean;
@@ -42,7 +44,7 @@ Path to the Quarto project source directory (where `_quarto.yml` is located).
 
 ```typescript
 {
-  quartoRoot: './quarto'
+  quartoRoot: "./quarto";
 }
 ```
 
@@ -55,7 +57,7 @@ Path to the rendered Quarto output directory where `.md` files are generated.
 
 ```typescript
 {
-  outputDir: '_site'
+  outputDir: "_site";
 }
 ```
 
@@ -84,6 +86,7 @@ Auto-render Quarto content before loading. When disabled (default), you must run
 ```
 
 **Workflow Options:**
+
 - `false` (default): User runs `quarto render` separately (recommended for dev)
 - `true`: Automatically runs `quarto render` with GFM format
 - object: Custom render configuration
@@ -97,13 +100,19 @@ Specifies which listing(s) to load from the Quarto project.
 
 ```typescript
 // Single listing
-{ listings: 'blog-posts' }
+{
+  listings: "blog-posts";
+}
 
 // Multiple listings
-{ listings: ['blog-posts', 'tutorials'] }
+{
+  listings: ["blog-posts", "tutorials"];
+}
 
 // All listings
-{ listings: 'all' }
+{
+  listings: "all";
+}
 ```
 
 ##### `fieldMappings`
@@ -128,16 +137,16 @@ Maps Quarto field names to Astro field names.
 
 ```typescript
 const DEFAULT_FIELD_MAPPINGS = {
-  'date': 'pubDate',
-  'date-modified': 'updatedDate',
-  'image': 'heroImage',
-  'title': 'title',
-  'description': 'description',
-  'author': 'author',
-  'categories': 'categories',
-  'tags': 'tags',
-  'draft': 'draft',
-}
+  date: "pubDate",
+  "date-modified": "updatedDate",
+  image: "heroImage",
+  title: "title",
+  description: "description",
+  author: "author",
+  categories: "categories",
+  tags: "tags",
+  draft: "draft",
+};
 ```
 
 ##### `schema`
@@ -148,7 +157,7 @@ Customize the auto-generated Zod schema.
 
 ```typescript
 interface SchemaConfig {
-  extend?: z.ZodObject<any>;   // Merge with base schema
+  extend?: z.ZodObject<any>; // Merge with base schema
   override?: z.ZodObject<any>; // Replace base schema completely
 }
 ```
@@ -156,14 +165,14 @@ interface SchemaConfig {
 **Example:**
 
 ```typescript
-import { z } from 'zod';
+import { z } from "zod";
 
 {
   schema: {
     extend: z.object({
       readingTime: z.number().optional(),
       featured: z.boolean().default(false),
-    })
+    });
   }
 }
 ```
@@ -179,7 +188,7 @@ Filter function for conditional inclusion of entries. Runs after field mapping.
   filter: (entry) => {
     // Only include published posts
     return !entry.draft && new Date(entry.pubDate) <= new Date();
-  }
+  };
 }
 ```
 
@@ -190,7 +199,7 @@ Filter function for conditional inclusion of entries. Runs after field mapping.
   filter: async (entry) => {
     const isValid = await validateEntry(entry);
     return isValid;
-  }
+  };
 }
 ```
 
@@ -206,7 +215,7 @@ Transform function for custom processing. Runs after field mapping and filter.
     ...entry,
     year: new Date(entry.pubDate).getFullYear(),
     excerpt: entry.description || generateExcerpt(entry.content),
-  })
+  });
 }
 ```
 
@@ -217,7 +226,7 @@ Transform function for custom processing. Runs after field mapping and filter.
   transform: async (entry) => {
     const readingTime = await calculateReadingTime(entry.content);
     return { ...entry, readingTime };
-  }
+  };
 }
 ```
 
@@ -229,7 +238,7 @@ Configuration for asset handling.
 
 ```typescript
 interface AssetConfig {
-  strategy?: 'reference' | 'copy' | 'symlink';
+  strategy?: "reference" | "copy" | "symlink";
   publicDir?: string;
   imageResolver?: (imagePath: string, qmdPath: string) => string;
 }
@@ -258,7 +267,7 @@ Enable/disable caching of parsed files.
 
 ```typescript
 {
-  cache: true
+  cache: true;
 }
 ```
 
@@ -271,7 +280,7 @@ Enable/disable parallel processing of files.
 
 ```typescript
 {
-  parallel: true
+  parallel: true;
 }
 ```
 
@@ -288,7 +297,7 @@ Maps source field names to target field names.
 ### `AssetStrategy`
 
 ```typescript
-type AssetStrategy = 'reference' | 'copy' | 'symlink';
+type AssetStrategy = "reference" | "copy" | "symlink";
 ```
 
 - `'reference'`: Keep original paths (default)
@@ -303,15 +312,15 @@ Default field mappings that match Astro blog template conventions:
 
 ```typescript
 export const DEFAULT_FIELD_MAPPINGS = {
-  'date': 'pubDate',
-  'date-modified': 'updatedDate',
-  'image': 'heroImage',
-  'title': 'title',
-  'description': 'description',
-  'author': 'author',
-  'categories': 'categories',
-  'tags': 'tags',
-  'draft': 'draft',
+  date: "pubDate",
+  "date-modified": "updatedDate",
+  image: "heroImage",
+  title: "title",
+  description: "description",
+  author: "author",
+  categories: "categories",
+  tags: "tags",
+  draft: "draft",
 } as const;
 ```
 
@@ -382,56 +391,56 @@ class ListingNotFoundError extends QuartoLoaderError {
 ### Basic Configuration
 
 ```typescript
-import { quartoLoader } from 'astro-loader-quarto';
+import { quartoLoader } from "astro-loader-quarto";
 
 const blog = defineCollection({
   loader: quartoLoader({
-    quartoRoot: './quarto',
-    listings: 'posts',
-  })
+    quartoRoot: "./quarto",
+    listings: "posts",
+  }),
 });
 ```
 
 ### Full Configuration
 
 ```typescript
-import { quartoLoader } from 'astro-loader-quarto';
-import { z } from 'zod';
+import { quartoLoader } from "astro-loader-quarto";
+import { z } from "zod";
 
 const blog = defineCollection({
   loader: quartoLoader({
-    quartoRoot: './quarto',
-    outputDir: '_site',
-    listings: ['posts', 'tutorials'],
-    
+    quartoRoot: "./quarto",
+    outputDir: "_site",
+    listings: ["posts", "tutorials"],
+
     fieldMappings: {
-      'date': 'publishedAt',
-      'date-modified': 'updatedAt',
-      'image': 'thumbnail',
-      'reading-time': 'readingMinutes',
+      date: "publishedAt",
+      "date-modified": "updatedAt",
+      image: "thumbnail",
+      "reading-time": "readingMinutes",
     },
-    
+
     filter: (entry) => !entry.draft,
-    
+
     transform: (entry) => ({
       ...entry,
       year: new Date(entry.publishedAt).getFullYear(),
     }),
-    
+
     schema: {
       extend: z.object({
         year: z.number(),
         readingMinutes: z.number().optional(),
-      })
+      }),
     },
-    
+
     assets: {
-      strategy: 'reference',
+      strategy: "reference",
     },
-    
+
     cache: true,
     parallel: true,
-  })
+  }),
 });
 ```
 
@@ -449,6 +458,5 @@ import type {
   AssetConfig,
   SchemaConfig,
   // ... and more
-} from 'astro-loader-quarto';
+} from "astro-loader-quarto";
 ```
-

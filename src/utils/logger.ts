@@ -2,7 +2,7 @@
  * Logging utilities
  */
 
-export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
+export type LogLevel = "debug" | "info" | "warn" | "error";
 
 /**
  * Logger interface compatible with Astro's logger
@@ -21,7 +21,7 @@ export function createLogger(astroLogger?: Logger): Logger {
   if (astroLogger) {
     return astroLogger;
   }
-  
+
   // Fallback to console
   return {
     debug: (msg: string) => console.debug(`[quarto-loader] ${msg}`),
@@ -36,17 +36,16 @@ export function createLogger(astroLogger?: Logger): Logger {
  */
 export class Timer {
   private start: number;
-  
+
   constructor() {
     this.start = Date.now();
   }
-  
+
   elapsed(): number {
     return Date.now() - this.start;
   }
-  
+
   log(logger: Logger, message: string): void {
     logger.debug(`${message} (${this.elapsed()}ms)`);
   }
 }
-

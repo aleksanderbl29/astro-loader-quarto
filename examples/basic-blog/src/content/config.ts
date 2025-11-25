@@ -1,5 +1,5 @@
-import { defineCollection } from 'astro:content';
-import { quartoLoader } from 'astro-loader-quarto';
+import { defineCollection } from "astro:content";
+import { quartoLoader } from "astro-loader-quarto";
 
 /**
  * Blog collection using Quarto content with default field mappings
@@ -9,12 +9,11 @@ import { quartoLoader } from 'astro-loader-quarto';
  */
 const blog = defineCollection({
   loader: quartoLoader({
-    quartoRoot: './quarto',
-    listings: 'blog-posts',
+    quartoRoot: "./quarto",
+    listings: "blog-posts",
     // Optional: Filter out draft posts
     filter: (entry) => entry.draft !== true,
-  })
+  }),
 });
 
 export const collections = { blog };
-

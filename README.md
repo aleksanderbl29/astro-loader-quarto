@@ -43,7 +43,7 @@ project:
   type: website
   output-dir: _site
 
-format: gfm  # REQUIRED: GitHub Flavored Markdown for Astro compatibility
+format: gfm # REQUIRED: GitHub Flavored Markdown for Astro compatibility
 
 listing:
   - id: blog-posts
@@ -65,7 +65,6 @@ image: "featured.jpg"
 categories: ["Technology"]
 tags: ["astro", "quarto"]
 ---
-
 # My First Post
 
 Your content here...
@@ -75,14 +74,14 @@ Your content here...
 
 ```typescript
 // src/content/config.ts
-import { defineCollection } from 'astro:content';
-import { quartoLoader } from 'astro-loader-quarto';
+import { defineCollection } from "astro:content";
+import { quartoLoader } from "astro-loader-quarto";
 
 const blog = defineCollection({
   loader: quartoLoader({
-    quartoRoot: './quarto',
-    listings: 'blog-posts',
-  })
+    quartoRoot: "./quarto",
+    listings: "blog-posts",
+  }),
 });
 
 export const collections = { blog };
@@ -129,17 +128,17 @@ const { Content } = await post.render();  // Render markdown content
 
 The loader applies these mappings by default to match Astro's blog template conventions:
 
-| Quarto Field | Astro Field | Type |
-|-------------|-------------|------|
-| `date` | `pubDate` | Date |
-| `date-modified` | `updatedDate` | Date (optional) |
-| `image` | `heroImage` | string (optional) |
-| `title` | `title` | string |
-| `description` | `description` | string (optional) |
-| `author` | `author` | string \| string[] (optional) |
-| `categories` | `categories` | string[] (optional) |
-| `tags` | `tags` | string[] (optional) |
-| `draft` | `draft` | boolean |
+| Quarto Field    | Astro Field   | Type                          |
+| --------------- | ------------- | ----------------------------- |
+| `date`          | `pubDate`     | Date                          |
+| `date-modified` | `updatedDate` | Date (optional)               |
+| `image`         | `heroImage`   | string (optional)             |
+| `title`         | `title`       | string                        |
+| `description`   | `description` | string (optional)             |
+| `author`        | `author`      | string \| string[] (optional) |
+| `categories`    | `categories`  | string[] (optional)           |
+| `tags`          | `tags`        | string[] (optional)           |
+| `draft`         | `draft`       | boolean                       |
 
 All other fields pass through with their original Quarto names.
 
@@ -150,15 +149,15 @@ You can customize field mappings to match your needs:
 ```typescript
 const blog = defineCollection({
   loader: quartoLoader({
-    quartoRoot: './quarto',
-    listings: 'blog-posts',
+    quartoRoot: "./quarto",
+    listings: "blog-posts",
     fieldMappings: {
-      'date': 'publishedAt',      // Override default
-      'date-modified': 'updatedAt', // Override default
-      'image': 'coverImage',        // Override default
-      'reading-time': 'readingMinutes', // Custom field
-    }
-  })
+      date: "publishedAt", // Override default
+      "date-modified": "updatedAt", // Override default
+      image: "coverImage", // Override default
+      "reading-time": "readingMinutes", // Custom field
+    },
+  }),
 });
 ```
 
@@ -171,20 +170,20 @@ Load different content types from multiple listings:
 ```typescript
 const blog = defineCollection({
   loader: quartoLoader({
-    quartoRoot: './quarto',
-    listings: 'blog-posts',
-  })
+    quartoRoot: "./quarto",
+    listings: "blog-posts",
+  }),
 });
 
 const docs = defineCollection({
   loader: quartoLoader({
-    quartoRoot: './quarto',
-    listings: 'documentation',
+    quartoRoot: "./quarto",
+    listings: "documentation",
     fieldMappings: {
-      'date': 'lastModified',
-      'version': 'version',
-    }
-  })
+      date: "lastModified",
+      version: "version",
+    },
+  }),
 });
 
 export const collections = { blog, docs };
@@ -197,13 +196,13 @@ Filter entries based on custom logic:
 ```typescript
 const blog = defineCollection({
   loader: quartoLoader({
-    quartoRoot: './quarto',
-    listings: 'blog-posts',
+    quartoRoot: "./quarto",
+    listings: "blog-posts",
     filter: (entry) => {
       // Only published posts, not in the future
       return !entry.draft && new Date(entry.pubDate) <= new Date();
-    }
-  })
+    },
+  }),
 });
 ```
 
@@ -214,14 +213,14 @@ Add computed fields or modify entries:
 ```typescript
 const blog = defineCollection({
   loader: quartoLoader({
-    quartoRoot: './quarto',
-    listings: 'blog-posts',
+    quartoRoot: "./quarto",
+    listings: "blog-posts",
     transform: (entry) => ({
       ...entry,
       year: new Date(entry.pubDate).getFullYear(),
       excerpt: entry.description || generateExcerpt(entry.content),
-    })
-  })
+    }),
+  }),
 });
 ```
 
@@ -230,19 +229,19 @@ const blog = defineCollection({
 Extend or override the auto-generated schema:
 
 ```typescript
-import { z } from 'zod';
+import { z } from "zod";
 
 const blog = defineCollection({
   loader: quartoLoader({
-    quartoRoot: './quarto',
-    listings: 'blog-posts',
+    quartoRoot: "./quarto",
+    listings: "blog-posts",
     schema: {
       extend: z.object({
         readingTime: z.number().optional(),
         featured: z.boolean().default(false),
-      })
-    }
-  })
+      }),
+    },
+  }),
 });
 ```
 
@@ -268,10 +267,10 @@ Let the loader automatically render Quarto content:
 // src/content/config.ts
 const blog = defineCollection({
   loader: quartoLoader({
-    quartoRoot: './quarto',
-    listings: 'blog-posts',
-    autoRender: true,  // Automatically runs 'quarto render'
-  })
+    quartoRoot: "./quarto",
+    listings: "blog-posts",
+    autoRender: true, // Automatically runs 'quarto render'
+  }),
 });
 ```
 
@@ -309,15 +308,15 @@ See [docs/api.md](./docs/api.md) for complete API documentation.
 
 ```typescript
 interface QuartoLoaderConfig {
-  quartoRoot: string;              // Required: Path to Quarto project
-  outputDir?: string;               // Output directory (default: _site)
-  listings?: string | string[] | 'all'; // Which listing(s) to load
-  fieldMappings?: FieldMappings;    // Custom field name mappings
-  filter?: (entry) => boolean;      // Filter entries
-  transform?: (entry) => any;       // Transform entries
-  schema?: SchemaConfig;            // Schema customization
-  cache?: boolean;                  // Enable caching (default: true)
-  parallel?: boolean;               // Parallel processing (default: true)
+  quartoRoot: string; // Required: Path to Quarto project
+  outputDir?: string; // Output directory (default: _site)
+  listings?: string | string[] | "all"; // Which listing(s) to load
+  fieldMappings?: FieldMappings; // Custom field name mappings
+  filter?: (entry) => boolean; // Filter entries
+  transform?: (entry) => any; // Transform entries
+  schema?: SchemaConfig; // Schema customization
+  cache?: boolean; // Enable caching (default: true)
+  parallel?: boolean; // Parallel processing (default: true)
 }
 ```
 
@@ -349,4 +348,3 @@ GPL-3.0 - See [LICENSE](./LICENSE) for details.
 - 📖 [Documentation](./docs/)
 - 🐛 [Issue Tracker](https://github.com/aleksanderbl29/astro-loader-quarto/issues)
 - 💬 [Discussions](https://github.com/aleksanderbl29/astro-loader-quarto/discussions)
-

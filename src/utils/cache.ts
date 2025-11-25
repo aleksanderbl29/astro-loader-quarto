@@ -2,7 +2,7 @@
  * Caching utilities for parsed files
  */
 
-import { stat } from 'fs/promises';
+import { stat } from "fs/promises";
 
 /**
  * Cache entry with metadata
@@ -19,12 +19,12 @@ interface CacheEntry<T> {
 export class FileCache<T> {
   private cache: Map<string, CacheEntry<T>>;
   private maxSize: number;
-  
+
   constructor(maxSize: number = 500) {
     this.cache = new Map();
     this.maxSize = maxSize;
   }
-  
+
   /**
    * Get cached entry if still valid
    */
@@ -33,7 +33,7 @@ export class FileCache<T> {
     if (!entry) {
       return undefined;
     }
-    
+
     try {
       // Check if file has been modified
       const stats = await stat(path);
@@ -48,19 +48,19 @@ export class FileCache<T> {
       this.cache.delete(path);
       return undefined;
     }
-    
+
     // File has been modified
     this.cache.delete(path);
     return undefined;
   }
-  
+
   /**
    * Set cache entry
    */
   async set(path: string, data: T): Promise<void> {
     try {
       const stats = await stat(path);
-      
+
       // Evict oldest entry if cache is full
       if (this.cache.size >= this.maxSize) {
         const firstKey = this.cache.keys().next().value;
@@ -68,7 +68,7 @@ export class FileCache<T> {
           this.cache.delete(firstKey);
         }
       }
-      
+
       this.cache.set(path, {
         data,
         mtime: stats.mtimeMs,
@@ -78,21 +78,21 @@ export class FileCache<T> {
       // Can't cache if we can't stat the file
     }
   }
-  
+
   /**
    * Invalidate cache entry
    */
   invalidate(path: string): void {
     this.cache.delete(path);
   }
-  
+
   /**
    * Clear entire cache
    */
   clear(): void {
     this.cache.clear();
   }
-  
+
   /**
    * Get cache size
    */
@@ -100,4 +100,3 @@ export class FileCache<T> {
     return this.cache.size;
   }
 }
-

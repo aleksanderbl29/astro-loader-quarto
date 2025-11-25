@@ -8,7 +8,7 @@
 export interface QuartoConfig {
   project?: {
     type?: string;
-    'output-dir'?: string;
+    "output-dir"?: string;
   };
   website?: {
     title?: string;
@@ -25,19 +25,19 @@ export interface QuartoConfig {
 export interface QuartoListing {
   id: string;
   contents: string | string[];
-  type?: 'default' | 'table' | 'grid';
+  type?: "default" | "table" | "grid";
   sort?: string | string[];
-  'sort-ui'?: boolean | string[];
-  'filter-ui'?: boolean | string[];
-  categories?: boolean | 'numbered' | 'unnumbered';
+  "sort-ui"?: boolean | string[];
+  "filter-ui"?: boolean | string[];
+  categories?: boolean | "numbered" | "unnumbered";
   fields?: string[];
-  'field-display-names'?: Record<string, string>;
-  'field-required'?: string[];
+  "field-display-names"?: Record<string, string>;
+  "field-required"?: string[];
   date?: string;
   image?: string;
-  'image-height'?: string;
-  'max-items'?: number;
-  'page-size'?: number;
+  "image-height"?: string;
+  "max-items"?: number;
+  "page-size"?: number;
   [key: string]: unknown;
 }
 
@@ -60,7 +60,7 @@ export interface ParsedMetadata {
   description?: string;
   author?: string | string[];
   date?: string | Date;
-  'date-modified'?: string | Date;
+  "date-modified"?: string | Date;
   image?: string;
   categories?: string[];
   tags?: string[];
@@ -95,9 +95,8 @@ export interface ResolvedListing {
  * Resolved content with source and output paths
  */
 export interface ResolvedContent {
-  qmdPath: string;    // Source .qmd file
-  mdPath: string;     // Rendered .md file
+  qmdPath: string; // Source .qmd file
+  mdPath: string; // Rendered .md file
   metadata: ParsedMetadata;
-  body: string;       // Markdown content
+  body: string; // Markdown content
 }
-

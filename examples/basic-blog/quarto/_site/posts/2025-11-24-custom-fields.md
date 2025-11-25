@@ -1,4 +1,5 @@
 # Working with Custom Fields
+
 Jane Doe
 2025-11-24
 
@@ -21,16 +22,16 @@ These custom fields can be:
 
 ## Example Configuration
 
-``` typescript
+```typescript
 const blog = defineCollection({
   loader: quartoLoader({
-    quartoRoot: './quarto',
-    listings: 'blog-posts',
+    quartoRoot: "./quarto",
+    listings: "blog-posts",
     fieldMappings: {
-      'reading-time': 'readingMinutes',
-      'difficulty': 'level',
-    }
-  })
+      "reading-time": "readingMinutes",
+      difficulty: "level",
+    },
+  }),
 });
 ```
 

@@ -2,7 +2,7 @@ project:
   type: website
   output-dir: _site
 
-format: gfm  # REQUIRED: GitHub Flavored Markdown for Astro compatibility
+format: gfm # REQUIRED: GitHub Flavored Markdown for Astro compatibility
 
 website:
   title: "Astro + Quarto Blog"
@@ -14,4 +14,3 @@ listing:
     type: grid
     categories: true
     fields: [title, date, description, categories, image, author]
-

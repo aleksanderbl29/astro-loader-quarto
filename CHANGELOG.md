@@ -75,4 +75,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - NPM package publishing automation
 
 [0.1.0]: https://github.com/aleksanderbl29/astro-loader-quarto/releases/tag/v0.1.0
-

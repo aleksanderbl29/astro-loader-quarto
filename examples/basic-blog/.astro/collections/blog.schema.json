@@ -78,10 +78,7 @@
           "type": "string"
         }
       },
-      "required": [
-        "title",
-        "pubDate"
-      ],
+      "required": ["title", "pubDate"],
       "additionalProperties": false
     }
   },

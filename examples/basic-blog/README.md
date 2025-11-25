@@ -73,6 +73,7 @@ npm run build
 ```
 
 This will:
+
 1. Render Quarto content with `quarto render quarto`
 2. Build the Astro site with `astro build`
 
@@ -95,13 +96,13 @@ Edit `src/content/config.ts`:
 ```typescript
 const blog = defineCollection({
   loader: quartoLoader({
-    quartoRoot: './quarto',
-    listings: 'blog-posts',
+    quartoRoot: "./quarto",
+    listings: "blog-posts",
     fieldMappings: {
-      'date': 'publishedAt',      // Custom mapping
-      'reading-time': 'duration',  // Map custom field
-    }
-  })
+      date: "publishedAt", // Custom mapping
+      "reading-time": "duration", // Map custom field
+    },
+  }),
 });
 ```
 
@@ -110,13 +111,13 @@ const blog = defineCollection({
 ```typescript
 const blog = defineCollection({
   loader: quartoLoader({
-    quartoRoot: './quarto',
-    listings: 'blog-posts',
+    quartoRoot: "./quarto",
+    listings: "blog-posts",
     filter: (entry) => {
       // Only published, not in future
       return !entry.draft && new Date(entry.pubDate) <= new Date();
-    }
-  })
+    },
+  }),
 });
 ```
 
@@ -125,13 +126,13 @@ const blog = defineCollection({
 ```typescript
 const blog = defineCollection({
   loader: quartoLoader({
-    quartoRoot: './quarto',
-    listings: 'blog-posts',
+    quartoRoot: "./quarto",
+    listings: "blog-posts",
     transform: (entry) => ({
       ...entry,
       year: new Date(entry.pubDate).getFullYear(),
-    })
-  })
+    }),
+  }),
 });
 ```
 
@@ -141,4 +142,3 @@ const blog = defineCollection({
 - [API Reference](../../docs/api.md)
 - [Field Mappings Guide](../../docs/field-mappings.md)
 - [More Examples](../../docs/examples.md)
-

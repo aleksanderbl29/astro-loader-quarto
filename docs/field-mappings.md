@@ -15,17 +15,17 @@ Field mappings allow you to seamlessly transform Quarto field names into Astro-f
 
 The loader applies these mappings by default to match Astro's blog template:
 
-| Quarto Field | Astro Field | Type | Notes |
-|-------------|-------------|------|-------|
-| `date` | `pubDate` | Date | Publication date |
-| `date-modified` | `updatedDate` | Date | Last modified date |
-| `image` | `heroImage` | string | Featured image |
-| `title` | `title` | string | No change (pass-through) |
-| `description` | `description` | string | No change (pass-through) |
-| `author` | `author` | string \| string[] | No change (pass-through) |
-| `categories` | `categories` | string[] | No change (pass-through) |
-| `tags` | `tags` | string[] | No change (pass-through) |
-| `draft` | `draft` | boolean | No change (pass-through) |
+| Quarto Field    | Astro Field   | Type               | Notes                    |
+| --------------- | ------------- | ------------------ | ------------------------ |
+| `date`          | `pubDate`     | Date               | Publication date         |
+| `date-modified` | `updatedDate` | Date               | Last modified date       |
+| `image`         | `heroImage`   | string             | Featured image           |
+| `title`         | `title`       | string             | No change (pass-through) |
+| `description`   | `description` | string             | No change (pass-through) |
+| `author`        | `author`      | string \| string[] | No change (pass-through) |
+| `categories`    | `categories`  | string[]           | No change (pass-through) |
+| `tags`          | `tags`        | string[]           | No change (pass-through) |
+| `draft`         | `draft`       | boolean            | No change (pass-through) |
 
 ### Example Transformation
 
@@ -68,14 +68,14 @@ Override default mappings or add new ones:
 ```typescript
 const blog = defineCollection({
   loader: quartoLoader({
-    quartoRoot: './quarto',
-    listings: 'posts',
+    quartoRoot: "./quarto",
+    listings: "posts",
     fieldMappings: {
-      'date': 'publishedAt',      // Override default
-      'date-modified': 'modified', // Override default
-      'image': 'coverImage',       // Override default
-    }
-  })
+      date: "publishedAt", // Override default
+      "date-modified": "modified", // Override default
+      image: "coverImage", // Override default
+    },
+  }),
 });
 ```
 
@@ -86,14 +86,14 @@ To disable default mappings and keep Quarto field names:
 ```typescript
 const docs = defineCollection({
   loader: quartoLoader({
-    quartoRoot: './quarto',
-    listings: 'documentation',
+    quartoRoot: "./quarto",
+    listings: "documentation",
     fieldMappings: {
-      'date': 'date',              // Keep as 'date'
-      'date-modified': 'date-modified', // Keep as 'date-modified'
-      'image': 'image',            // Keep as 'image'
-    }
-  })
+      date: "date", // Keep as 'date'
+      "date-modified": "date-modified", // Keep as 'date-modified'
+      image: "image", // Keep as 'image'
+    },
+  }),
 });
 ```
 
@@ -104,15 +104,15 @@ Map your custom Quarto fields:
 ```typescript
 const tutorials = defineCollection({
   loader: quartoLoader({
-    quartoRoot: './quarto',
-    listings: 'tutorials',
+    quartoRoot: "./quarto",
+    listings: "tutorials",
     fieldMappings: {
-      'difficulty': 'level',           // Custom field
-      'reading-time': 'readingMinutes', // Custom field
-      'prerequisites': 'requires',      // Custom field
-      'video-url': 'videoLink',        // Custom field
-    }
-  })
+      difficulty: "level", // Custom field
+      "reading-time": "readingMinutes", // Custom field
+      prerequisites: "requires", // Custom field
+      "video-url": "videoLink", // Custom field
+    },
+  }),
 });
 ```
 
@@ -150,41 +150,41 @@ Each collection can have its own field mappings:
 // Blog collection - uses Astro conventions
 const blog = defineCollection({
   loader: quartoLoader({
-    quartoRoot: './quarto',
-    listings: 'blog-posts',
+    quartoRoot: "./quarto",
+    listings: "blog-posts",
     fieldMappings: {
-      'date': 'pubDate',
-      'date-modified': 'updatedDate',
-      'image': 'heroImage',
-    }
-  })
+      date: "pubDate",
+      "date-modified": "updatedDate",
+      image: "heroImage",
+    },
+  }),
 });
 
 // Documentation - uses different conventions
 const docs = defineCollection({
   loader: quartoLoader({
-    quartoRoot: './quarto',
-    listings: 'documentation',
+    quartoRoot: "./quarto",
+    listings: "documentation",
     fieldMappings: {
-      'date': 'lastModified',
-      'version': 'docVersion',
-      'chapter': 'section',
-    }
-  })
+      date: "lastModified",
+      version: "docVersion",
+      chapter: "section",
+    },
+  }),
 });
 
 // Projects - custom fields
 const projects = defineCollection({
   loader: quartoLoader({
-    quartoRoot: './quarto',
-    listings: 'projects',
+    quartoRoot: "./quarto",
+    listings: "projects",
     fieldMappings: {
-      'date': 'completedDate',
-      'client': 'clientName',
-      'tech-stack': 'technologies',
-      'project-url': 'liveUrl',
-    }
-  })
+      date: "completedDate",
+      client: "clientName",
+      "tech-stack": "technologies",
+      "project-url": "liveUrl",
+    },
+  }),
 });
 
 export const collections = { blog, docs, projects };
@@ -197,12 +197,12 @@ Fields not specified in `fieldMappings` pass through with their original Quarto 
 ```typescript
 const blog = defineCollection({
   loader: quartoLoader({
-    quartoRoot: './quarto',
-    listings: 'posts',
+    quartoRoot: "./quarto",
+    listings: "posts",
     fieldMappings: {
-      'date': 'pubDate',
-    }
-  })
+      date: "pubDate",
+    },
+  }),
 });
 ```
 
@@ -235,6 +235,7 @@ another-field: 123
 ### What is a Conflict?
 
 A conflict occurs when:
+
 1. You map a Quarto field to a target name
 2. The target name already exists in the Quarto frontmatter
 
@@ -243,7 +244,7 @@ A conflict occurs when:
 ```yaml
 ---
 date: "2025-11-24"
-pubDate: "2024-01-10"  # Conflict! We want to map 'date' -> 'pubDate'
+pubDate: "2024-01-10" # Conflict! We want to map 'date' -> 'pubDate'
 ---
 ```
 
@@ -260,7 +261,7 @@ pubDate: "2024-01-10"  # Conflict! We want to map 'date' -> 'pubDate'
 The loader will throw a `FieldMappingConflictError` with a clear message:
 
 ```
-FieldMappingConflictError: Field mapping conflict in my-post.qmd: 
+FieldMappingConflictError: Field mapping conflict in my-post.qmd:
 Cannot map 'date' to 'pubDate' because 'pubDate' already exists in the source data.
 Please choose a different mapping or remove the conflicting field.
 ```
@@ -305,14 +306,14 @@ date: "2025-11-24"
 ```typescript
 const events = defineCollection({
   loader: quartoLoader({
-    quartoRoot: './quarto',
-    listings: 'events',
+    quartoRoot: "./quarto",
+    listings: "events",
     fieldMappings: {
-      'date': 'publishedDate',        // When published
-      'event-date': 'eventDate',       // When event occurs
-      'registration-deadline': 'deadline', // Registration cutoff
-    }
-  })
+      date: "publishedDate", // When published
+      "event-date": "eventDate", // When event occurs
+      "registration-deadline": "deadline", // Registration cutoff
+    },
+  }),
 });
 ```
 
@@ -365,7 +366,7 @@ Flatten with transform:
     ...entry,
     seoTitle: entry.seo?.title,
     seoDescription: entry.seo?.description,
-  })
+  });
 }
 ```
 
@@ -392,18 +393,18 @@ Field mappings happen **before** schema generation, so schemas use mapped names:
 ```typescript
 const blog = defineCollection({
   loader: quartoLoader({
-    quartoRoot: './quarto',
-    listings: 'posts',
+    quartoRoot: "./quarto",
+    listings: "posts",
     fieldMappings: {
-      'date': 'publishedAt',
-    }
-  })
+      date: "publishedAt",
+    },
+  }),
 });
 
 // In your code:
-const posts = await getCollection('blog');
-posts[0].data.publishedAt  // ? Correct
-posts[0].data.date          // ? Wrong (field was mapped)
+const posts = await getCollection("blog");
+posts[0].data.publishedAt; // ? Correct
+posts[0].data.date; // ? Wrong (field was mapped)
 ```
 
 ### Custom Schema with Mapped Names
@@ -431,25 +432,25 @@ Use the same mappings across related collections:
 
 ```typescript
 const commonMappings = {
-  'date': 'pubDate',
-  'date-modified': 'updatedDate',
-  'image': 'heroImage',
+  date: "pubDate",
+  "date-modified": "updatedDate",
+  image: "heroImage",
 };
 
 const blog = defineCollection({
   loader: quartoLoader({
-    quartoRoot: './quarto',
-    listings: 'blog',
+    quartoRoot: "./quarto",
+    listings: "blog",
     fieldMappings: commonMappings,
-  })
+  }),
 });
 
 const news = defineCollection({
   loader: quartoLoader({
-    quartoRoot: './quarto',
-    listings: 'news',
+    quartoRoot: "./quarto",
+    listings: "news",
     fieldMappings: commonMappings,
-  })
+  }),
 });
 ```
 
@@ -472,9 +473,9 @@ Add comments for clarity:
 Verify mappings work as expected:
 
 ```typescript
-import { getCollection } from 'astro:content';
+import { getCollection } from "astro:content";
 
-const posts = await getCollection('blog');
+const posts = await getCollection("blog");
 console.log(posts[0].data); // Check actual field names
 ```
 
@@ -528,4 +529,3 @@ If you're migrating from a Quarto-only site:
 ## Examples
 
 See [examples.md](./examples.md) for complete working examples.
-

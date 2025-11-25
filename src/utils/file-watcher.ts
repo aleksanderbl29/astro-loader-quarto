@@ -2,15 +2,15 @@
  * File watching utilities for hot module replacement
  */
 
-import { watch as fsWatch, type FSWatcher } from 'fs';
-import { EventEmitter } from 'events';
+import { watch as fsWatch, type FSWatcher } from "fs";
+import { EventEmitter } from "events";
 
 /**
  * File change event
  */
 export interface FileChangeEvent {
   path: string;
-  type: 'add' | 'change' | 'unlink';
+  type: "add" | "change" | "unlink";
 }
 
 /**
@@ -19,7 +19,7 @@ export interface FileChangeEvent {
 export class QuartoFileWatcher extends EventEmitter {
   private watchers: FSWatcher[] = [];
   private watching: boolean = false;
-  
+
   /**
    * Start watching paths
    */
@@ -27,29 +27,33 @@ export class QuartoFileWatcher extends EventEmitter {
     if (this.watching) {
       return;
     }
-    
+
     this.watching = true;
-    
+
     for (const path of paths) {
       try {
-        const watcher = fsWatch(path, { recursive: true }, (eventType, filename) => {
-          if (!filename) return;
-          
-          const changeType = eventType === 'rename' ? 'add' : 'change';
-          
-          this.emit('change', {
-            path: filename,
-            type: changeType,
-          } as FileChangeEvent);
-        });
-        
+        const watcher = fsWatch(
+          path,
+          { recursive: true },
+          (eventType, filename) => {
+            if (!filename) return;
+
+            const changeType = eventType === "rename" ? "add" : "change";
+
+            this.emit("change", {
+              path: filename,
+              type: changeType,
+            } as FileChangeEvent);
+          },
+        );
+
         this.watchers.push(watcher);
       } catch (error) {
         // Path might not exist yet, ignore
       }
     }
   }
-  
+
   /**
    * Stop watching all paths
    */
@@ -60,7 +64,7 @@ export class QuartoFileWatcher extends EventEmitter {
     this.watchers = [];
     this.watching = false;
   }
-  
+
   /**
    * Check if watching
    */
@@ -75,4 +79,3 @@ export class QuartoFileWatcher extends EventEmitter {
 export function createFileWatcher(): QuartoFileWatcher {
   return new QuartoFileWatcher();
 }
-

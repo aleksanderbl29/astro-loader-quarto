@@ -2,12 +2,12 @@
  * Configuration types for Quarto Loader
  */
 
-import type { z } from 'zod';
+import type { z } from "zod";
 
 /**
  * Asset handling strategy
  */
-export type AssetStrategy = 'reference' | 'copy' | 'symlink';
+export type AssetStrategy = "reference" | "copy" | "symlink";
 
 /**
  * Asset handling configuration
@@ -30,15 +30,15 @@ export interface SchemaConfig {
  * Default field mappings from Quarto to Astro
  */
 export const DEFAULT_FIELD_MAPPINGS = {
-  'title': 'title',
-  'description': 'description',
-  'author': 'author',
-  'date': 'pubDate',
-  'date-modified': 'updatedDate',
-  'image': 'heroImage',
-  'categories': 'categories',
-  'tags': 'tags',
-  'draft': 'draft',
+  title: "title",
+  description: "description",
+  author: "author",
+  date: "pubDate",
+  "date-modified": "updatedDate",
+  image: "heroImage",
+  categories: "categories",
+  tags: "tags",
+  draft: "draft",
 } as const;
 
 /**
@@ -63,15 +63,15 @@ export interface QuartoLoaderConfig {
   /**
    * Auto-render Quarto content before loading
    * @default false
-   * 
+   *
    * When false (default): User must run 'quarto render' separately
    * When true: Automatically runs 'quarto render' with GFM format
    * When object: Customize the render command and options
-   * 
+   *
    * @example
    * // Simple enable
    * autoRender: true
-   * 
+   *
    * @example
    * // Custom options
    * autoRender: {
@@ -81,12 +81,14 @@ export interface QuartoLoaderConfig {
    *   format: 'gfm'
    * }
    */
-  autoRender?: boolean | {
-    enabled: boolean;
-    command?: string;
-    args?: string[];
-    format?: string;
-  };
+  autoRender?:
+    | boolean
+    | {
+        enabled: boolean;
+        command?: string;
+        args?: string[];
+        format?: string;
+      };
 
   /**
    * Which listing(s) to load
@@ -94,7 +96,7 @@ export interface QuartoLoaderConfig {
    * - string[]: Multiple listing IDs
    * - 'all': Load all listings
    */
-  listings?: string | string[] | 'all';
+  listings?: string | string[] | "all";
 
   /**
    * Field mappings from Quarto field names to Astro field names
@@ -117,7 +119,9 @@ export interface QuartoLoaderConfig {
    * Transform function for custom processing
    * Runs after field mapping and filter
    */
-  transform?: (entry: Record<string, unknown>) => Record<string, unknown> | Promise<Record<string, unknown>>;
+  transform?: (
+    entry: Record<string, unknown>,
+  ) => Record<string, unknown> | Promise<Record<string, unknown>>;
 
   /**
    * Asset handling configuration
@@ -141,4 +145,3 @@ export interface NormalizationOptions {
   slugify?: (title: string) => string;
   imageResolver?: (imagePath: string, qmdPath: string) => string;
 }
-

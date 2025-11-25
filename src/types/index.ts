@@ -9,7 +9,7 @@ export type {
   ParsedMetadata,
   NormalizedEntry,
   ResolvedListing,
-} from './quarto.js';
+} from "./quarto.js";
 
 export type {
   QuartoLoaderConfig,
@@ -18,9 +18,9 @@ export type {
   SchemaConfig,
   FieldMappings,
   NormalizationOptions,
-} from './loader-config.js';
+} from "./loader-config.js";
 
-export { DEFAULT_FIELD_MAPPINGS } from './loader-config.js';
+export { DEFAULT_FIELD_MAPPINGS } from "./loader-config.js";
 
 export {
   QuartoLoaderError,
@@ -29,5 +29,4 @@ export {
   FieldMappingConflictError,
   ValidationError,
   ListingNotFoundError,
-} from '../utils/errors.js';
-
+} from "../utils/errors.js";
