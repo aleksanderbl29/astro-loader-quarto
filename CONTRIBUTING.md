@@ -133,7 +133,7 @@ npm run dev
 
 ### 4. Commit Your Changes
 
-Follow [Conventional Commits](https://www.conventionalcommits.org/):
+**Important:** This project uses [Conventional Commits](https://www.conventionalcommits.org/) for automatic versioning and changelog generation. All commits must follow this format:
 
 ```bash
 git commit -m "feat: add new feature"
@@ -141,6 +141,50 @@ git commit -m "fix: resolve bug"
 git commit -m "docs: update documentation"
 git commit -m "test: add tests"
 git commit -m "refactor: improve code"
+```
+
+#### Commit Types
+
+- `feat`: A new feature (triggers minor version bump)
+- `fix`: A bug fix (triggers patch version bump)
+- `docs`: Documentation only changes
+- `style`: Code style changes (formatting, etc.)
+- `refactor`: Code refactoring
+- `perf`: Performance improvements
+- `test`: Adding or updating tests
+- `build`: Build system changes
+- `ci`: CI/CD changes
+- `chore`: Other changes that don't modify src or test files
+- `revert`: Revert a previous commit
+
+#### Breaking Changes
+
+To trigger a major version bump, include `BREAKING CHANGE:` in the commit footer:
+
+```bash
+git commit -m "feat: change API
+
+BREAKING CHANGE: The API has been completely redesigned"
+```
+
+Or use `!` after the type:
+
+```bash
+git commit -m "feat!: redesign API"
+```
+
+#### Validating Commits
+
+You can validate your commit messages locally:
+
+```bash
+pnpm run commitlint
+```
+
+Or validate a specific commit message:
+
+```bash
+echo "feat: add new feature" | pnpm run commitlint
 ```
 
 ### 5. Push and Create PR
@@ -166,7 +210,7 @@ Then create a Pull Request on GitHub.
 - [ ] Type checking passes (`npm run typecheck`)
 - [ ] Code follows project style
 - [ ] Documentation updated
-- [ ] CHANGELOG.md updated (for significant changes)
+- [ ] CHANGELOG.md will be auto-generated (no manual updates needed)
 - [ ] Example project still works
 - [ ] Commits follow Conventional Commits format
 
@@ -271,6 +315,79 @@ Include:
 - Proposed solution
 - Alternative solutions considered
 - Examples of usage
+
+## Versioning and Releases
+
+This project uses [semantic-release](https://semantic-release.gitbook.io/) for automatic versioning and releases.
+
+### How It Works
+
+1. **Automatic Versioning**: Version numbers are determined automatically based on commit messages:
+   - `feat:` commits → minor version bump (0.1.0 → 0.2.0)
+   - `fix:` commits → patch version bump (0.1.0 → 0.1.1)
+   - `BREAKING CHANGE:` → major version bump (0.1.0 → 1.0.0)
+
+2. **Automatic Releases**: When code is merged to `main`:
+   - Tests run automatically
+   - If tests pass, semantic-release analyzes commits since the last release
+   - If there are relevant changes, it:
+     - Bumps the version in `package.json`
+     - Generates/updates `CHANGELOG.md`
+     - Creates a git tag
+     - Publishes to npm
+     - Creates a GitHub release
+
+3. **No Manual Releases**: You don't need to manually create releases or update version numbers. Just merge PRs with conventional commits to `main`.
+
+### Release Process
+
+Releases happen automatically when:
+- Code is pushed to the `main` branch
+- Commits follow Conventional Commits format
+- Tests pass
+- There are changes that warrant a release
+
+### Testing Releases Locally
+
+You can test the release process locally (dry-run):
+
+```bash
+pnpm run release --dry-run
+```
+
+**Note:** This won't actually publish or create releases, but will show what would happen.
+
+### GitHub Secrets Required
+
+For releases to work, you need to configure npm authentication. There are two options:
+
+#### Option 1: Trusted Publishing (Recommended - More Secure)
+
+Trusted publishing uses OpenID Connect (OIDC) and doesn't require storing tokens:
+
+1. Go to your npm package settings: https://www.npmjs.com/settings/YOUR_USERNAME/packages
+2. Navigate to "Automation" → "Trusted Publishers"
+3. Add a new trusted publisher:
+   - Select "GitHub Actions"
+   - Choose your repository: `aleksanderbl29/astro-loader-quarto`
+   - Set the workflow file path: `.github/workflows/publish.yml`
+   - Save
+
+No secrets needed! The workflow will automatically authenticate using OIDC.
+
+#### Option 2: Traditional Token (Fallback)
+
+If you prefer using a token:
+
+1. Create an npm access token at https://www.npmjs.com/settings/YOUR_USERNAME/tokens
+   - Select "Automation" token type
+   - Copy the token
+2. Add it as a GitHub secret:
+   - Go to your repository → Settings → Secrets and variables → Actions
+   - Add a new secret named `NPM_TOKEN` with your token value
+3. Uncomment the `NPM_TOKEN` line in `.github/workflows/publish.yml`
+
+The `GITHUB_TOKEN` is automatically provided by GitHub Actions.
 
 ## Questions?
 

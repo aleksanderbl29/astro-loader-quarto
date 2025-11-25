@@ -1,24 +1,31 @@
-name: Publish to NPM
+name: Release
 
 on:
-  release:
-    types: [published]
+  push:
+    branches:
+      - main
 
 jobs:
-  publish:
+  release:
     runs-on: ubuntu-latest
+    # Only run on main branch pushes, not on pull requests
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
 
     permissions:
-      contents: read
+      contents: write
+      issues: write
+      pull-requests: write
       id-token: write
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20.x"
+          node-version: "24.x"
           registry-url: "https://registry.npmjs.org"
 
       - name: Setup pnpm
@@ -35,5 +42,7 @@ jobs:
       - name: Build package
         run: pnpm run build
 
-      - name: Publish to NPM
-        run: pnpm publish --provenance --access public --no-git-checks
+      - name: Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: pnpm run release
