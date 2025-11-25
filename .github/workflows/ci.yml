@@ -43,6 +43,17 @@ jobs:
       - name: Build package
         run: pnpm run build
 
+  formatting:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - name: Run formatting
+        run: pnpx prettier . --check
+
   build-example:
     runs-on: ubuntu-latest
 
