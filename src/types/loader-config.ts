@@ -22,8 +22,8 @@ export interface AssetConfig {
  * Schema configuration for validation
  */
 export interface SchemaConfig {
-  extend?: z.ZodObject<any>;
-  override?: z.ZodObject<any>;
+  extend?: z.ZodObject<z.ZodRawShape>;
+  override?: z.ZodObject<z.ZodRawShape>;
 }
 
 /**

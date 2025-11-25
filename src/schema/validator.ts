@@ -19,7 +19,7 @@ export interface ValidationResult {
  */
 export function validateEntry(
   entry: Record<string, unknown>,
-  schema: z.ZodObject<any>,
+  schema: z.ZodObject<z.ZodRawShape>,
   _filePath?: string,
 ): ValidationResult {
   const result = schema.safeParse(entry);
@@ -48,7 +48,7 @@ export function validateEntry(
  */
 export function validateEntryOrThrow(
   entry: Record<string, unknown>,
-  schema: z.ZodObject<any>,
+  schema: z.ZodObject<z.ZodRawShape>,
   filePath?: string,
 ): Record<string, unknown> {
   const result = validateEntry(entry, schema, filePath);
@@ -69,7 +69,7 @@ export function validateEntryOrThrow(
  */
 export function validateEntries(
   entries: Array<{ data: Record<string, unknown>; path: string }>,
-  schema: z.ZodObject<any>,
+  schema: z.ZodObject<z.ZodRawShape>,
 ): Array<ValidationResult & { path: string }> {
   return entries.map((entry) => ({
     path: entry.path,

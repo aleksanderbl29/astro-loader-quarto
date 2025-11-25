@@ -82,6 +82,7 @@ export function inferFieldType(
   // Check if all values have the same type
   const allSameType = definedValues.every((v) => {
     const type = inferTypeFromValue(v);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return (type as any)._def?.typeName === (baseType as any)._def?.typeName;
   });
 
@@ -105,7 +106,7 @@ export function generateSchema(
   documents: Array<Record<string, unknown>>,
   _listing: QuartoListing,
   options: SchemaOptions = {},
-): z.ZodObject<any> {
+): z.ZodObject<z.ZodRawShape> {
   const schemaFields: Record<string, z.ZodType<unknown>> = {};
 
   // Collect all field names
@@ -149,10 +150,10 @@ export function generateSchema(
  * Apply schema configuration (extend/override)
  */
 export function applySchemaConfig(
-  baseSchema: z.ZodObject<any>,
+  baseSchema: z.ZodObject<z.ZodRawShape>,
   config?: SchemaConfig,
   logger?: { warn: (msg: string) => void },
-): z.ZodObject<any> {
+): z.ZodObject<z.ZodRawShape> {
   if (!config) {
     return baseSchema;
   }
@@ -189,7 +190,7 @@ export function createListingSchema(
   documents: Array<Record<string, unknown>>,
   userConfig?: SchemaConfig,
   logger?: { warn: (msg: string) => void },
-): z.ZodObject<any> {
+): z.ZodObject<z.ZodRawShape> {
   // Get required fields from listing config
   const requiredFields = listing["field-required"] || [];
 

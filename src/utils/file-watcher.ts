@@ -48,7 +48,7 @@ export class QuartoFileWatcher extends EventEmitter {
         );
 
         this.watchers.push(watcher);
-      } catch (error) {
+      } catch {
         // Path might not exist yet, ignore
       }
     }

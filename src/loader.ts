@@ -352,7 +352,7 @@ export function quartoLoader(config: QuartoLoaderConfig): Loader {
         }
 
         // 13. Set up file watching in development
-        if ((meta as any).mode === "dev") {
+        if ((meta as { mode?: string }).mode === "dev") {
           if (!fileWatcher.isWatching()) {
             fileWatcher.watch([quartoRoot]);
 

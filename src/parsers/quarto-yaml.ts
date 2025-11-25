@@ -108,7 +108,7 @@ export function validateQuartoFormat(
   logger?: { warn: (msg: string) => void },
 ): void {
   // Check project-level format
-  const projectFormat = (config as any).format;
+  const projectFormat = config.format as unknown;
 
   if (!projectFormat) {
     if (logger) {
@@ -140,7 +140,7 @@ export function validateQuartoFormat(
  * Check if Quarto format is configured correctly for Astro
  */
 export function isGfmFormatConfigured(config: QuartoConfig): boolean {
-  const projectFormat = (config as any).format;
+  const projectFormat = config.format as unknown;
 
   if (!projectFormat) {
     return false;
