@@ -1,3 +1,10 @@
+# 1.0.0 (2025-11-25)
+
+
+### Bug Fixes
+
+* convert absolute paths to relative for Astro store ([b1b4291](https://github.com/aleksanderbl29/astro-loader-quarto/commit/b1b42918fa849046ff0bc1fed422011170a253bc))
+
 # Changelog
 
 All notable changes to this project will be documented in this file.

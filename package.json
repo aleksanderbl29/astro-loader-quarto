@@ -1,6 +1,6 @@
 {
   "name": "astro-loader-quarto",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Astro Loader for Quarto content collections with full type safety and field mapping",
   "type": "module",
   "keywords": [
