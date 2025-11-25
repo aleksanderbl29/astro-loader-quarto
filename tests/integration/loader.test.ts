@@ -20,6 +20,7 @@ describe('Quarto Loader Integration', () => {
       get: (id: string) => entries.get(id),
       all: () => Array.from(entries.values()),
       clear: () => entries.clear(),
+      addModuleImport: () => {}, // Mock for Astro's module import registration
     };
   };
   

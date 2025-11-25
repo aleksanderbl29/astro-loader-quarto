@@ -64,6 +64,7 @@ This is the **markdown content** from Quarto.
         entries.push(entry);
       },
       clear: () => {},
+      addModuleImport: () => {}, // Mock for Astro's module import registration
     };
 
     // Load content
@@ -113,6 +114,7 @@ date: "2024-01-15"
         entries.push(entry);
       },
       clear: () => {},
+      addModuleImport: () => {}, // Mock for Astro's module import registration
     };
 
     // Load content
@@ -155,6 +157,7 @@ listing:
     const mockStore = {
       set: (entry: any) => entries.push(entry),
       clear: () => {},
+      addModuleImport: () => {}, // Mock for Astro's module import registration
     };
     const mockLogger = {
       ...console,
@@ -163,11 +166,11 @@ listing:
 
     // Load content
     const loader = quartoLoader({ quartoRoot, listings: 'blog' });
-    await loader.load({ 
-      store: mockStore as any, 
-      meta: {} as any, 
+    await loader.load({
+      store: mockStore as any,
+      meta: {} as any,
       logger: mockLogger as any,
-      parseData: async (data: any) => data 
+      parseData: async (data: any) => data
     });
 
     // Should warn about missing GFM format

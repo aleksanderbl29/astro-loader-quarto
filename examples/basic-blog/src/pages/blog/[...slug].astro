@@ -1,16 +1,21 @@
 ---
-import { getCollection } from 'astro:content';
+import { getCollection, getEntry, render } from 'astro:content';
 
 export async function getStaticPaths() {
   const posts = await getCollection('blog');
   return posts.map(post => ({
-    params: { slug: post.slug },
-    props: { post }
+    params: { slug: post.id },
   }));
 }
 
-const { post } = Astro.props;
-const { Content } = await post.render();  // Render Quarto markdown content
+// Fetch the entry directly instead of using props
+const post = await getEntry('blog', Astro.params.slug);
+
+if (!post) {
+  throw new Error(`Post not found: ${Astro.params.slug}`);
+}
+
+const { Content } = await render(post);  // Render Quarto markdown content
 ---
 
 <!DOCTYPE html>
@@ -35,7 +40,7 @@ const { Content } = await post.render();  // Render Quarto markdown content
       border-radius: 8px;
       margin-bottom: 2rem;
     }
-    h1 { 
+    h1 {
       color: #333;
       margin-bottom: 0.5rem;
     }
@@ -63,7 +68,7 @@ const { Content } = await post.render();  // Render Quarto markdown content
       text-decoration: none;
     }
     .back:hover { text-decoration: underline; }
-    
+
     /* Styles for rendered markdown content */
     .content {
       font-size: 1.05rem;
@@ -98,24 +103,24 @@ const { Content } = await post.render();  // Render Quarto markdown content
 </head>
 <body>
   <a href="/" class="back">← Back to blog</a>
-  
+
   <article>
     {post.data.heroImage && (
-      <img 
-        src={post.data.heroImage} 
+      <img
+        src={post.data.heroImage}
         alt={post.data.title}
         class="hero"
       />
     )}
-    
+
     <h1>{post.data.title}</h1>
-    
+
     <div class="meta">
       <time datetime={post.data.pubDate.toISOString()}>
-        {post.data.pubDate.toLocaleDateString('en-US', { 
-          year: 'numeric', 
-          month: 'long', 
-          day: 'numeric' 
+        {post.data.pubDate.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
         })}
       </time>
       {post.data.author && <span> • by {post.data.author}</span>}
@@ -125,7 +130,7 @@ const { Content } = await post.render();  // Render Quarto markdown content
         </div>
       )}
     </div>
-    
+
     {post.data.categories && (
       <div class="categories">
         {post.data.categories.map(cat => (
@@ -133,13 +138,13 @@ const { Content } = await post.render();  // Render Quarto markdown content
         ))}
       </div>
     )}
-    
+
     {post.data.description && (
       <p style="font-size: 1.2rem; color: #555; margin: 1.5rem 0;">
         {post.data.description}
       </p>
     )}
-    
+
     <div class="content">
       <Content />  <!-- Rendered Quarto markdown content -->
     </div>

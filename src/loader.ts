@@ -2,7 +2,7 @@
  * Main Astro Loader implementation for Quarto content
  */
 
-import { resolve, join } from 'path';
+import { resolve, join, relative } from 'path';
 import type { Loader } from 'astro/loaders';
 import type { QuartoLoaderConfig } from './types/loader-config.js';
 import { mergeFieldMappings } from './parsers/metadata-normalizer.js';
@@ -256,10 +256,27 @@ export function quartoLoader(config: QuartoLoaderConfig): Loader {
               const validatedData = validateEntryOrThrow(entry.data as Record<string, unknown>, schema);
 
               // Store entry with body field
+              // For deferred rendering, we need a filePath that Astro can import
+              // Since we have markdown in the outputPath already, use that
+              const absoluteMdPath = filePath ? matchQmdToMd(filePath, quartoRoot, outputPath) : undefined;
+              
+              // Convert to relative path from project root (Astro requires relative paths)
+              const mdPath = absoluteMdPath ? relative(process.cwd(), absoluteMdPath) : undefined;
+
+              // Log the paths for debugging
+              logger.debug(`Entry ${entry.id}: mdPath=${mdPath}, hasBody=${!!body}`);
+
+              // Register the markdown file as a module import for Vite
+              if (mdPath) {
+                store.addModuleImport(mdPath);
+              }
+
               store.set({
                 id: entry.id,
                 data: validatedData as Record<string, unknown>,
-                body,  // Markdown content - enables render() method
+                body,  // Markdown content
+                filePath: mdPath,  // Relative path to the .md file for deferred rendering
+                deferredRender: true,  // Enable markdown rendering via render()
               });
 
               totalEntries++;
