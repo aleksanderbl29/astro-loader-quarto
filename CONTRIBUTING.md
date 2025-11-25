@@ -342,6 +342,7 @@ This project uses [semantic-release](https://semantic-release.gitbook.io/) for a
 ### Release Process
 
 Releases happen automatically when:
+
 - Code is pushed to the `main` branch
 - Commits follow Conventional Commits format
 - Tests pass
