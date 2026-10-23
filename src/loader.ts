@@ -24,6 +24,7 @@ import {
   matchQmdToMd,
 } from "./parsers/markdown-content.js";
 import { createListingSchema } from "./schema/generator.js";
+import { baseSchema } from "./schema/common-fields.js";
 import { validateEntryOrThrow } from "./schema/validator.js";
 import { FileCache } from "./utils/cache.js";
 import { createFileWatcher } from "./utils/file-watcher.js";
@@ -379,11 +380,7 @@ export function quartoLoader(config: QuartoLoaderConfig): Loader {
       }
     },
 
-    schema: async () => {
-      // Return a basic schema - actual schema is generated per listing in load()
-      // This is used by Astro for type generation
-      const { baseSchema } = await import("./schema/common-fields.js");
-      return baseSchema;
-    },
+    // Actual schemas are generated per listing in load().
+    schema: baseSchema,
   };
 }

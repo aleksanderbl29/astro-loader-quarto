@@ -253,7 +253,7 @@ describe("Quarto Loader Integration", () => {
         listings: "blog-posts",
       });
 
-      const schema = await loader.schema!();
+      const schema = loader.schema!;
       expect(schema).toBeDefined();
       expect(schema.shape).toBeDefined();
     });

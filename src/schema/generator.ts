@@ -50,7 +50,7 @@ function inferTypeFromValue(value: unknown): z.ZodType<unknown> {
   }
 
   if (typeof value === "object") {
-    return z.record(z.unknown());
+    return z.record(z.string(), z.unknown());
   }
 
   return z.unknown();
@@ -82,8 +82,7 @@ export function inferFieldType(
   // Check if all values have the same type
   const allSameType = definedValues.every((v) => {
     const type = inferTypeFromValue(v);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return (type as any)._def?.typeName === (baseType as any)._def?.typeName;
+    return type.type === baseType.type;
   });
 
   if (!allSameType) {

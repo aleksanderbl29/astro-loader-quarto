@@ -32,7 +32,7 @@ export function validateEntry(
   }
 
   // Format Zod errors
-  const errors = result.error.errors.map((err) => ({
+  const errors = result.error.issues.map((err) => ({
     field: err.path.join("."),
     message: err.message,
   }));
