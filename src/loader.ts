@@ -1,389 +1,245 @@
-/**
- * Main Astro Loader implementation for Quarto content
- */
-
-import { resolve, join, relative } from "path";
-import type { Loader } from "astro/loaders";
+import { readFile } from "node:fs/promises";
+import { dirname, join, relative, resolve } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
+import matter from "gray-matter";
+import fg from "fast-glob";
+import type { Loader, LoaderContext } from "astro/loaders";
 import type { QuartoLoaderConfig } from "./types/loader-config.js";
-import { mergeFieldMappings } from "./parsers/metadata-normalizer.js";
+import { inside, selectSources, sourceMetadata, yamlFile } from "./source.js";
+import { assetPublisher } from "./assets.js";
 import {
-  parseQuartoYaml,
-  extractListings,
-  getOutputDir,
-  findListing,
-  validateQuartoFormat,
-} from "./parsers/quarto-yaml.js";
-import {
-  resolveListing,
-  applySortConfiguration,
-} from "./parsers/listing-config.js";
-import { parseQmdFile, extractMetadata } from "./parsers/qmd-frontmatter.js";
-import { normalizeMetadata } from "./parsers/metadata-normalizer.js";
-import {
-  readRenderedMarkdown,
-  matchQmdToMd,
-} from "./parsers/markdown-content.js";
-import { createListingSchema } from "./schema/generator.js";
-import { validateEntryOrThrow } from "./schema/validator.js";
-import { FileCache } from "./utils/cache.js";
-import { createFileWatcher } from "./utils/file-watcher.js";
-import { createLogger, Timer } from "./utils/logger.js";
-import {
-  renderQuarto,
   normalizeAutoRenderConfig,
+  renderQuarto,
 } from "./utils/quarto-renderer.js";
-import { ListingNotFoundError } from "./utils/errors.js";
 
-/**
- * Create a Quarto content loader for Astro
- */
-export function quartoLoader(config: QuartoLoaderConfig): Loader {
-  // Normalize configuration
-  const quartoRoot = resolve(config.quartoRoot);
-  const fieldMappings = mergeFieldMappings(config.fieldMappings);
-  const cacheEnabled = config.cache ?? true;
-  const parallelEnabled = config.parallel ?? true;
-
-  // Create cache instances
-  const qmdCache = new FileCache<ReturnType<typeof extractMetadata>>(
-    cacheEnabled ? 500 : 0,
-  );
-  const fileWatcher = createFileWatcher();
-
+type Entry = Parameters<LoaderContext["store"]["set"]>[0];
+export function quartoLoader(options: QuartoLoaderConfig): Loader {
+  let detach: (() => void) | undefined;
   return {
     name: "quarto-loader",
-
-    load: async ({ store, logger: astroLogger, meta }) => {
-      const logger = createLogger(astroLogger);
-      const timer = new Timer();
-
-      try {
-        logger.info("Loading Quarto content...");
-
-        // 0. Optional: Auto-render Quarto content
-        const renderOptions = normalizeAutoRenderConfig(config.autoRender);
+    async load(context) {
+      detach?.();
+      const root = resolve(
+        fileURLToPath(context.config.root),
+        options.quartoRoot,
+      );
+      const publicAssets = resolve(
+        fileURLToPath(context.config.publicDir),
+        options.assets?.publicDir ?? "quarto-assets",
+      );
+      if (options.assets?.strategy === "symlink")
+        throw new Error(
+          "assets.strategy symlink is unsupported; use copy for portable deployment.",
+        );
+      let revision = 0;
+      let running: Promise<void> | undefined;
+      let disposed = false;
+      let output = resolve(root, options.outputDir ?? "_site");
+      let renderArtifacts: string[] = [];
+      async function prepare(): Promise<Entry[]> {
+        const project = await yamlFile(join(root, "_quarto.yml"));
+        const projectOptions = project.project;
+        const defaultOutput =
+          typeof projectOptions === "object" &&
+          projectOptions !== null &&
+          "output-dir" in projectOptions &&
+          typeof projectOptions["output-dir"] === "string"
+            ? projectOptions["output-dir"]
+            : "_site";
+        output = resolve(root, options.outputDir ?? defaultOutput);
+        if (!inside(root, output) || output === root)
+          throw new Error("outputDir must be a directory within quartoRoot.");
+        const renderOptions = normalizeAutoRenderConfig(options.autoRender);
         if (renderOptions.enabled) {
-          logger.info("Auto-rendering Quarto content...");
+          if (renderOptions.format !== "gfm")
+            throw new Error("autoRender requires format gfm.");
+          const sources = await fg("**/*.qmd", {
+            cwd: root,
+            absolute: true,
+            ignore: [
+              relative(root, output).split("\\").join("/") + "/**",
+              ".quarto/**",
+              "_freeze/**",
+            ],
+          });
+          renderArtifacts = sources.flatMap((path) => [
+            path.replace(/\.qmd$/, ".quarto_ipynb"),
+            path.replace(/\.qmd$/, ".md"),
+            path.replace(/\.qmd$/, "_files"),
+          ]);
+          await renderQuarto(root, {
+            ...renderOptions,
+            args: [
+              ...(renderOptions.args ?? ["render"]),
+              "--output-dir",
+              relative(root, output),
+            ],
+          });
+        }
+        const publisher = assetPublisher({
+          root,
+          outputDir: output,
+          publicDir: fileURLToPath(context.config.publicDir),
+          base: context.config.base,
+          collection: context.collection,
+          config: options,
+        });
+        const entries: Entry[] = [];
+        const ids = new Map<string, string>();
+        const documents = [];
+        for (const { path, defaults } of await selectSources(
+          options,
+          root,
+          project,
+        )) {
+          const document = await sourceMetadata(
+            path,
+            root,
+            project,
+            defaults,
+            options,
+          );
+          const previous = ids.get(document.id);
+          if (previous)
+            throw new Error(
+              `Duplicate ID '${document.id}': ${previous} and ${path}. Set distinct explicit slugs.`,
+            );
+          ids.set(document.id, path);
+          documents.push({ path, document });
+        }
+        for (const { path, document } of documents) {
+          if (options.filter && !(await options.filter(document.data)))
+            continue;
+          let data = options.transform
+            ? await options.transform(document.data)
+            : document.data;
+          const hero = data.heroImage;
+          if (typeof hero === "string") {
+            const resolved = options.assets?.imageResolver
+              ? options.assets.imageResolver(hero, path)
+              : hero;
+            data = {
+              ...data,
+              heroImage: await publisher.url(
+                resolved,
+                document.origins.get("heroImage") ?? dirname(path),
+                path,
+              ),
+            };
+          }
+          const generated = join(
+            output,
+            relative(root, path).replace(/\.qmd$/, ".md"),
+          );
+          let body: string;
           try {
-            await renderQuarto(quartoRoot, renderOptions);
-            logger.info("Quarto rendering complete");
+            body = matter(await readFile(generated, "utf8")).content;
           } catch (error) {
-            logger.error(`Auto-render failed: ${(error as Error).message}`);
+            throw new Error(
+              `${path}: missing/unreadable generated GFM ${generated}. Run quarto render --to gfm and commit the output for autoRender:false. ${String(error)}`,
+              { cause: error },
+            );
+          }
+          body = await publisher.markdown(body, generated, path);
+          const parsed = await context.parseData({
+            id: document.id,
+            data,
+            filePath: path,
+          });
+          const rendered = await context.renderMarkdown(body, {
+            fileURL: pathToFileURL(generated),
+          });
+          rendered.html = await publisher.html(
+            rendered.html,
+            dirname(generated),
+            path,
+          );
+          entries.push({
+            id: document.id,
+            data: parsed,
+            body,
+            rendered,
+            filePath: relative(fileURLToPath(context.config.root), generated),
+            digest: context.generateDigest({ data: parsed, body, rendered }),
+            assetImports: rendered.metadata?.imagePaths,
+          });
+        }
+        return entries;
+      }
+      async function drain() {
+        let seen: number;
+        do {
+          seen = revision;
+          let entries: Entry[];
+          try {
+            entries = await prepare();
+          } catch (error) {
+            if (!disposed && seen !== revision) continue;
             throw error;
           }
-        }
-
-        // 1. Parse _quarto.yml
-        const quartoYamlPath = join(quartoRoot, "_quarto.yml");
-        logger.debug(`Parsing Quarto config: ${quartoYamlPath}`);
-        const quartoConfig = await parseQuartoYaml(quartoYamlPath);
-
-        // Validate GFM format
-        validateQuartoFormat(quartoConfig, logger);
-
-        // 2. Get output directory
-        const outputDir = config.outputDir || getOutputDir(quartoConfig);
-        const outputPath = resolve(quartoRoot, outputDir);
-
-        // 3. Resolve which listings to load
-        const allListings = extractListings(quartoConfig);
-        logger.debug(`Found ${allListings.length} listing(s) in Quarto config`);
-
-        let listingsToLoad = allListings;
-
-        if (config.listings) {
-          if (config.listings === "all") {
-            // Load all listings
-            listingsToLoad = allListings;
-          } else if (typeof config.listings === "string") {
-            // Load single listing
-            const listing = findListing(quartoConfig, config.listings);
-            if (!listing) {
-              throw new ListingNotFoundError(
-                config.listings,
-                allListings.map((l) => l.id),
-              );
-            }
-            listingsToLoad = [listing];
-          } else {
-            // Load multiple specific listings
-            listingsToLoad = [];
-            for (const listingId of config.listings) {
-              const listing = findListing(quartoConfig, listingId);
-              if (!listing) {
-                throw new ListingNotFoundError(
-                  listingId,
-                  allListings.map((l) => l.id),
-                );
-              }
-              listingsToLoad.push(listing);
-            }
-          }
-        }
-
-        logger.info(
-          `Loading ${listingsToLoad.length} listing(s): ${listingsToLoad.map((l) => l.id).join(", ")}`,
-        );
-
-        // 4. Process each listing
-        let totalEntries = 0;
-
-        for (const listing of listingsToLoad) {
-          const listingTimer = new Timer();
-          logger.debug(`Processing listing: ${listing.id}`);
-
-          // 5. Resolve listing files
-          const resolved = await resolveListing(listing, quartoRoot);
-          logger.debug(
-            `Found ${resolved.files.length} file(s) for listing ${listing.id}`,
+          if (disposed) return;
+          if (seen !== revision) continue;
+          const ids = new Set(entries.map((entry) => entry.id));
+          for (const entry of entries) context.store.set(entry);
+          for (const id of context.store.keys())
+            if (!ids.has(id)) context.store.delete(id);
+        } while (seen !== revision);
+      }
+      function request() {
+        revision++;
+        if (!running)
+          running = drain().finally(() => {
+            running = undefined;
+          });
+        return running;
+      }
+      // Attach before the initial pass so edits during rendering invalidate it.
+      const watcher = context.watcher;
+      if (watcher) {
+        const callback = (path: string) => {
+          if (!inside(root, resolve(path))) return;
+          if (
+            inside(publicAssets, resolve(path)) ||
+            path.split(/[\\/]/).includes(".quarto")
+          )
+            return;
+          // Quarto's own output events must not recursively invoke autoRender.
+          if (
+            normalizeAutoRenderConfig(options.autoRender).enabled &&
+            (inside(output, resolve(path)) ||
+              inside(join(root, "_freeze"), resolve(path)) ||
+              renderArtifacts.some((artifact) =>
+                inside(artifact, resolve(path)),
+              ))
+          )
+            return;
+          void request().catch((error) =>
+            context.logger.error(
+              `Quarto reload failed; keeping previous entries: ${String(error)}`,
+            ),
           );
-
-          if (resolved.files.length === 0) {
-            logger.warn(`No files found for listing ${listing.id}`);
-            continue;
-          }
-
-          // 6. Parse .qmd files (in parallel if enabled)
-          const parseFile = async (filePath: string) => {
-            // Check cache first
-            if (cacheEnabled) {
-              const cached = await qmdCache.get(filePath);
-              if (cached) {
-                return { filePath, metadata: cached };
-              }
-            }
-
-            const qmdDoc = await parseQmdFile(filePath);
-            const metadata = extractMetadata(qmdDoc.frontmatter);
-
-            // Cache result
-            if (cacheEnabled) {
-              await qmdCache.set(filePath, metadata);
-            }
-
-            return { filePath, metadata };
-          };
-
-          const parsedFiles = parallelEnabled
-            ? await Promise.all(resolved.files.map(parseFile))
-            : await resolved.files.reduce(
-                async (acc, file) => {
-                  const results = await acc;
-                  results.push(await parseFile(file));
-                  return results;
-                },
-                Promise.resolve(
-                  [] as Array<{
-                    filePath: string;
-                    metadata: ReturnType<typeof extractMetadata>;
-                  }>,
-                ),
-              );
-
-          logger.debug(
-            `Parsed ${parsedFiles.length} file(s) for listing ${listing.id}`,
-          );
-
-          // 7. Normalize metadata and apply field mappings
-          // Track file paths for later markdown content reading
-          const filePathMap = new Map<string, string>();
-
-          const normalizedEntries = parsedFiles.map(
-            ({ filePath, metadata }) => {
-              const entry = normalizeMetadata(
-                metadata,
-                filePath,
-                {
-                  basePath: quartoRoot,
-                  outputDir: outputPath,
-                  fieldMappings,
-                  slugify: undefined, // Could be configurable
-                  imageResolver: config.assets?.imageResolver,
-                },
-                resolved.defaults,
-              );
-              // Store file path mapping for this entry
-              filePathMap.set(entry.id, filePath);
-              return entry;
-            },
-          );
-
-          logger.debug(
-            `Normalized ${normalizedEntries.length} entry(s) for listing ${listing.id}`,
-          );
-
-          // 8. Apply filter function if provided
-          let filteredEntries = normalizedEntries;
-          if (config.filter) {
-            if (parallelEnabled) {
-              const filterResults = await Promise.all(
-                normalizedEntries.map(async (entry) => ({
-                  entry,
-                  keep: await config.filter!(entry.data),
-                })),
-              );
-              filteredEntries = filterResults
-                .filter((r) => r.keep)
-                .map((r) => r.entry);
-            } else {
-              const kept = [];
-              for (const entry of normalizedEntries) {
-                if (await config.filter(entry.data)) {
-                  kept.push(entry);
-                }
-              }
-              filteredEntries = kept;
-            }
-
-            logger.debug(
-              `Filtered to ${filteredEntries.length} entry(s) for listing ${listing.id}`,
-            );
-          }
-
-          // 9. Apply transform function if provided
-          let transformedEntries = filteredEntries;
-          if (config.transform) {
-            if (parallelEnabled) {
-              transformedEntries = await Promise.all(
-                filteredEntries.map(async (entry) => ({
-                  ...entry,
-                  data: await config.transform!(entry.data),
-                })),
-              );
-            } else {
-              const transformed = [];
-              for (const entry of filteredEntries) {
-                transformed.push({
-                  ...entry,
-                  data: await config.transform(entry.data),
-                });
-              }
-              transformedEntries = transformed;
-            }
-
-            logger.debug(
-              `Transformed ${transformedEntries.length} entry(s) for listing ${listing.id}`,
-            );
-          }
-
-          // 10. Apply sort configuration
-          const sortedEntries = applySortConfiguration(
-            transformedEntries,
-            listing.sort,
-          );
-
-          // 11. Generate schema
-          const entryDataList = sortedEntries.map(
-            (e) => e.data as Record<string, unknown>,
-          );
-          const schema = createListingSchema(
-            listing,
-            entryDataList,
-            config.schema,
-            logger,
-          );
-
-          // 12. Read markdown content and validate entries
-          for (const entry of sortedEntries) {
-            try {
-              // Get the original file path from our tracking map
-              const filePath = filePathMap.get(entry.id);
-
-              // Read rendered markdown content
-              let body = "";
-              if (filePath) {
-                const mdPath = matchQmdToMd(filePath, quartoRoot, outputPath);
-                try {
-                  body = await readRenderedMarkdown(mdPath);
-                } catch (error) {
-                  logger.warn(
-                    `Could not read markdown content for ${entry.id}: ${(error as Error).message}`,
-                  );
-                  // Continue with empty body
-                }
-              }
-
-              // Validate metadata
-              const validatedData = validateEntryOrThrow(
-                entry.data as Record<string, unknown>,
-                schema,
-              );
-
-              // Store entry with body field
-              // For deferred rendering, we need a filePath that Astro can import
-              // Since we have markdown in the outputPath already, use that
-              const absoluteMdPath = filePath
-                ? matchQmdToMd(filePath, quartoRoot, outputPath)
-                : undefined;
-
-              // Convert to relative path from project root (Astro requires relative paths)
-              const mdPath = absoluteMdPath
-                ? relative(process.cwd(), absoluteMdPath)
-                : undefined;
-
-              // Log the paths for debugging
-              logger.debug(
-                `Entry ${entry.id}: mdPath=${mdPath}, hasBody=${!!body}`,
-              );
-
-              // Register the markdown file as a module import for Vite
-              if (mdPath) {
-                store.addModuleImport(mdPath);
-              }
-
-              store.set({
-                id: entry.id,
-                data: validatedData as Record<string, unknown>,
-                body, // Markdown content
-                filePath: mdPath, // Relative path to the .md file for deferred rendering
-                deferredRender: true, // Enable markdown rendering via render()
-              });
-
-              totalEntries++;
-            } catch (error) {
-              logger.error(
-                `Failed to process ${entry.id}: ${(error as Error).message}`,
-              );
-              // Continue processing other entries
-            }
-          }
-
-          listingTimer.log(logger, `Processed listing ${listing.id}`);
-        }
-
-        // 13. Set up file watching in development
-        if ((meta as { mode?: string }).mode === "dev") {
-          if (!fileWatcher.isWatching()) {
-            fileWatcher.watch([quartoRoot]);
-
-            fileWatcher.on("change", (event) => {
-              if (
-                event.path.endsWith(".qmd") ||
-                event.path.endsWith("_quarto.yml")
-              ) {
-                logger.debug(`File changed: ${event.path}`);
-                qmdCache.invalidate(event.path);
-              }
-            });
-
-            logger.debug("File watching enabled for hot reload");
-          }
-        }
-
-        timer.log(logger, `Loaded ${totalEntries} total entry(s) from Quarto`);
+        };
+        watcher.add(root);
+        for (const event of ["add", "change", "unlink", "addDir", "unlinkDir"])
+          watcher.on(event, callback);
+        detach = () => {
+          disposed = true;
+          for (const event of [
+            "add",
+            "change",
+            "unlink",
+            "addDir",
+            "unlinkDir",
+          ])
+            watcher.off(event, callback);
+        };
+      }
+      try {
+        await request();
       } catch (error) {
-        logger.error(
-          `Failed to load Quarto content: ${(error as Error).message}`,
-        );
+        detach?.();
         throw error;
       }
-    },
-
-    schema: async () => {
-      // Return a basic schema - actual schema is generated per listing in load()
-      // This is used by Astro for type generation
-      const { baseSchema } = await import("./schema/common-fields.js");
-      return baseSchema;
     },
   };
 }

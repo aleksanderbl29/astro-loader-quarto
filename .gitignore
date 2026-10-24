@@ -14,3 +14,9 @@ coverage/
 *~
 .cache/
 
+.devenv/
+.direnv/
+.astro/
+.result*
+tests/.work/
+/examples/basic-blog/public/quarto-assets/

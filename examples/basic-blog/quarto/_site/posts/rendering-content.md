@@ -18,7 +18,7 @@ This post demonstrates how Quarto content is rendered in Astro.
 
 ```typescript
 const { post } = Astro.props;
-const { Content } = await post.render();
+const { Content } = await render(post);
 ```
 
 ## Markdown Features

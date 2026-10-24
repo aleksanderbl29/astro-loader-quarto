@@ -1,350 +1,127 @@
 # astro-loader-quarto
 
-> THIS PROJECT IS WORK IN PROGRESS. DO NOT USE.
+Load Quarto's pre-rendered GitHub Flavored Markdown into Astro 6 content
+collections. Astro's `render(entry)` renders the content inside your own pages.
 
-> Astro Loader for Quarto content collections with full type safety and field mapping
+## Use the loader
 
-[![npm version](https://badge.fury.io/js/astro-loader-quarto.svg)](https://www.npmjs.com/package/astro-loader-quarto)
-[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+Install `astro-loader-quarto` with your package manager. Use Node 22.12+ or
+Node 24+ and Astro 6.
 
-Enable your Astro projects to use [Quarto](https://quarto.org/) Listings as Content Collections through a custom Astro Loader. Author content in Quarto (`.qmd` files) and consume it seamlessly in Astro with full type safety and schema validation.
-
-## Features
-
-- 🚀 **Zero-config setup** - Works out of the box with sensible defaults
-- 🎯 **Type-safe** - Full TypeScript support with auto-generated Zod schemas
-- 🔄 **Field mapping** - Seamlessly map Quarto field names to Astro conventions
-- 🎨 **Flexible** - Support for multiple listings, custom filters, and transforms
-- ⚡ **Fast** - Parallel parsing with intelligent caching
-- 🔥 **Hot reload** - File watching for development
-- 📦 **Multiple listings** - Load different content types from one Quarto project
-
-## Requirements
-
-- **Astro**: 4.0 or higher (required for Loader API)
-- **Quarto**: 1.3 or higher
-- **Node.js**: 18 or higher
-
-## Installation
-
-```bash
-npm install astro-loader-quarto
-```
-
-## Quick Start
-
-### 1. Set up your Quarto project
-
-Create a Quarto project with a listing in `_quarto.yml`:
+Configure your Quarto project to emit GFM into a mirrored output directory:
 
 ```yaml
 # quarto/_quarto.yml
 project:
-  type: website
-  output-dir: _site
-
-format: gfm # REQUIRED: GitHub Flavored Markdown for Astro compatibility
-
-listing:
-  - id: blog-posts
-    contents: posts/*.qmd
-    sort: "date desc"
-    type: grid
+  type: default
+  output-dir: _rendered
+  render: ["guides/**/index.qmd"]
+format:
+  gfm:
+    toc: false
+    template: body-only.template
 ```
 
-Create some `.qmd` files:
+Create `quarto/body-only.template` containing `$body$` to keep title/author/date
+blocks in the Astro page shell. Render the project with `quarto render --to gfm`. Commit `_rendered` and its
+resources when your deployment does not have Quarto installed.
 
-```yaml
----
-# quarto/posts/my-first-post.qmd
-title: "My First Post"
-description: "An introduction to my blog"
-author: "Jane Doe"
-date: "2025-11-24"
-image: "featured.jpg"
-categories: ["Technology"]
-tags: ["astro", "quarto"]
----
-# My First Post
-
-Your content here...
-```
-
-### 2. Configure Astro content collection
-
-```typescript
-// src/content/config.ts
-import { defineCollection } from "astro:content";
+```ts
+// src/content.config.ts
+import { defineCollection, z } from "astro:content";
 import { quartoLoader } from "astro-loader-quarto";
 
-const blog = defineCollection({
+const guides = defineCollection({
   loader: quartoLoader({
     quartoRoot: "./quarto",
-    listings: "blog-posts",
+    outputDir: "_rendered",
+    pattern: "guides/**/index.qmd",
+    autoRender: false,
+    assets: { strategy: "copy" },
+  }),
+  schema: z.object({
+    title: z.string(),
+    pubDate: z.date(),
+    updatedDate: z.date().optional(),
+    heroImage: z.string().optional(),
+    draft: z.boolean().default(false),
+    tags: z.array(z.string()).default([]),
   }),
 });
-
-export const collections = { blog };
+export const collections = { guides };
 ```
-
-### 3. Render Quarto content
-
-```bash
-cd quarto && quarto render
-```
-
-### 4. Use in your Astro pages
 
 ```astro
 ---
-// src/pages/blog/[...slug].astro
-import { getCollection } from 'astro:content';
-
+import { getCollection, render } from 'astro:content';
 export async function getStaticPaths() {
-  const posts = await getCollection('blog');
-  return posts.map(post => ({
-    params: { slug: post.slug },
-    props: { post }
+  return (await getCollection('guides')).map(entry => ({
+    params: { slug: entry.id }, props: { entry },
   }));
 }
-
-const { post } = Astro.props;
-const { Content } = await post.render();  // Render markdown content
+const { entry } = Astro.props;
+const { Content } = await render(entry);
 ---
-
-<article>
-  {post.data.heroImage && (
-    <img src={post.data.heroImage} alt={post.data.title} />
-  )}
-  <h1>{post.data.title}</h1>
-  <time datetime={post.data.pubDate.toISOString()}>
-    {post.data.pubDate.toLocaleDateString()}
-  </time>
-  <Content />  <!-- Rendered Quarto markdown content -->
-</article>
+<article><h1>{entry.data.title}</h1><Content /></article>
 ```
 
-## Default Field Mappings
+Use a `[...slug].astro` route for nested IDs. Set an explicit `slug` in QMD
+frontmatter to retain an existing public URL. The fallback ID is the source
+path relative to `quartoRoot`, without `.qmd` or a terminal `/index`.
+`guides/a/index.qmd` becomes `guides/a`; a root `index.qmd` becomes `index`.
+Dates and Unicode in paths are preserved. Duplicate IDs fail the entire load.
 
-The loader applies these mappings by default to match Astro's blog template conventions:
+Native Markdown and MDX use a separate collection with Astro's `glob()` loader.
+Query both collections in your application when you want one listing. This
+loader owns its entire collection store.
 
-| Quarto Field    | Astro Field   | Type                          |
-| --------------- | ------------- | ----------------------------- |
-| `date`          | `pubDate`     | Date                          |
-| `date-modified` | `updatedDate` | Date (optional)               |
-| `image`         | `heroImage`   | string (optional)             |
-| `title`         | `title`       | string                        |
-| `description`   | `description` | string (optional)             |
-| `author`        | `author`      | string \| string[] (optional) |
-| `categories`    | `categories`  | string[] (optional)           |
-| `tags`          | `tags`        | string[] (optional)           |
-| `draft`         | `draft`       | boolean                       |
+## Rendering and resources
 
-All other fields pass through with their original Quarto names.
+The loader reads metadata from `_quarto.yml`, ancestor `_metadata.yml` or
+`_metadata.yaml` files, and QMD frontmatter, in increasing precedence. Metadata
+mappings run before the caller's schema. The loader calls Astro's `parseData`
+and stores the result, including schema defaults and transforms.
 
-## Custom Field Mappings
+Local Markdown images, HTML images, downloads, and `heroImage` metadata are
+copied into an owned namespace under Astro's `config.publicDir`. Browser URLs
+include `config.base`. Query strings and fragments survive. Relative body
+resources resolve against generated GFM first, then the corresponding source
+directory. Inherited hero images resolve relative to the metadata file that
+introduced them. External and root-relative public URLs remain unchanged.
+Absolute filesystem paths are never produced for hero images.
 
-You can customize field mappings to match your needs:
+Relative `.qmd` crosslinks fail with an actionable error. Replace them with
+public URLs, or provide `resolveLink(href, sourcePath)` returning a root-relative
+or HTTP(S) URL. The resolver owns query and fragment handling. A relative link
+without a matching local file requires an explicit public URL for site routes.
 
-```typescript
-const blog = defineCollection({
-  loader: quartoLoader({
-    quartoRoot: "./quarto",
-    listings: "blog-posts",
-    fieldMappings: {
-      date: "publishedAt", // Override default
-      "date-modified": "updatedAt", // Override default
-      image: "coverImage", // Override default
-      "reading-time": "readingMinutes", // Custom field
-    },
-  }),
-});
-```
+The supported contract is **static GFM**: text, code output, static figures,
+tables, citations, and downloads. Quarto HTML widgets and local script, style,
+iframe, or HTML dependency graphs are unsupported. Relative `srcset` is rejected;
+use public URLs for that attribute. GFM does not preserve every Quarto HTML
+feature, and this package does not load Quarto's HTML runtime.
 
-## Advanced Usage
+## Development and deployment
 
-### Multiple Listings
+`autoRender: true` runs Quarto before each load. The default is `false`; that
+mode never invokes the Quarto CLI and works on Vercel with committed artifacts.
+Your authoring workflow must render changed sources and dependencies before
+committing. The loader checks output/resource existence, but cannot establish
+freshness from pre-rendered artifacts alone. Use your project's provenance or
+content-digest check when deployment must reject stale output.
 
-Load different content types from multiple listings:
+In development, Astro's watcher triggers serialized full reconciliations on
+source, rendered Markdown, metadata, and dependency changes below `quartoRoot`.
+Changes during a load cause a fresh pass before publishing. A failed background
+load logs the error and keeps the last successful collection; the next valid
+edit retries. Deleting the final QMD removes all entries on the next successful
+load. Missing output, invalid data, missing assets, and duplicate IDs fail an
+initial build rather than silently dropping posts.
 
-```typescript
-const blog = defineCollection({
-  loader: quartoLoader({
-    quartoRoot: "./quarto",
-    listings: "blog-posts",
-  }),
-});
+Copied assets have content-hashed paths. The loader leaves previous files in
+its owned public namespace so an in-flight page can keep using its assets.
+To reclaim unused files, remove that namespace before a fresh build. Do not put
+handwritten assets inside it.
 
-const docs = defineCollection({
-  loader: quartoLoader({
-    quartoRoot: "./quarto",
-    listings: "documentation",
-    fieldMappings: {
-      date: "lastModified",
-      version: "version",
-    },
-  }),
-});
-
-export const collections = { blog, docs };
-```
-
-### Filtering Entries
-
-Filter entries based on custom logic:
-
-```typescript
-const blog = defineCollection({
-  loader: quartoLoader({
-    quartoRoot: "./quarto",
-    listings: "blog-posts",
-    filter: (entry) => {
-      // Only published posts, not in the future
-      return !entry.draft && new Date(entry.pubDate) <= new Date();
-    },
-  }),
-});
-```
-
-### Transforming Entries
-
-Add computed fields or modify entries:
-
-```typescript
-const blog = defineCollection({
-  loader: quartoLoader({
-    quartoRoot: "./quarto",
-    listings: "blog-posts",
-    transform: (entry) => ({
-      ...entry,
-      year: new Date(entry.pubDate).getFullYear(),
-      excerpt: entry.description || generateExcerpt(entry.content),
-    }),
-  }),
-});
-```
-
-### Custom Schema
-
-Extend or override the auto-generated schema:
-
-```typescript
-import { z } from "zod";
-
-const blog = defineCollection({
-  loader: quartoLoader({
-    quartoRoot: "./quarto",
-    listings: "blog-posts",
-    schema: {
-      extend: z.object({
-        readingTime: z.number().optional(),
-        featured: z.boolean().default(false),
-      }),
-    },
-  }),
-});
-```
-
-## Development Workflow
-
-### Option 1: Manual Render (Recommended)
-
-Run Quarto and Astro separately:
-
-```bash
-# Terminal 1: Quarto preview (auto-renders on save)
-cd quarto && quarto preview
-
-# Terminal 2: Astro dev server
-npm run dev
-```
-
-### Option 2: Auto-Render (Good for CI/CD)
-
-Let the loader automatically render Quarto content:
-
-```typescript
-// src/content/config.ts
-const blog = defineCollection({
-  loader: quartoLoader({
-    quartoRoot: "./quarto",
-    listings: "blog-posts",
-    autoRender: true, // Automatically runs 'quarto render'
-  }),
-});
-```
-
-Then just run:
-
-```bash
-npm run dev
-```
-
-### Option 3: Parallel with npm-run-all
-
-```json
-{
-  "scripts": {
-    "dev:quarto": "cd quarto && quarto preview",
-    "dev:astro": "astro dev",
-    "dev": "npm-run-all --parallel dev:quarto dev:astro"
-  }
-}
-```
-
-## Production Build
-
-```bash
-# 1. Render Quarto content
-cd quarto && quarto render && cd ..
-
-# 2. Build Astro site
-npm run build
-```
-
-## Configuration Options
-
-See [docs/api.md](./docs/api.md) for complete API documentation.
-
-```typescript
-interface QuartoLoaderConfig {
-  quartoRoot: string; // Required: Path to Quarto project
-  outputDir?: string; // Output directory (default: _site)
-  listings?: string | string[] | "all"; // Which listing(s) to load
-  fieldMappings?: FieldMappings; // Custom field name mappings
-  filter?: (entry) => boolean; // Filter entries
-  transform?: (entry) => any; // Transform entries
-  schema?: SchemaConfig; // Schema customization
-  cache?: boolean; // Enable caching (default: true)
-  parallel?: boolean; // Parallel processing (default: true)
-}
-```
-
-## Documentation
-
-- [API Documentation](./docs/api.md) - Complete configuration reference
-- [Field Mappings Guide](./docs/field-mappings.md) - Detailed field mapping examples
-- [Examples](./docs/examples.md) - More usage examples
-
-## Example Project
-
-See [examples/basic-blog](./examples/basic-blog) for a complete working example.
-
-## Contributing
-
-Contributions are welcome! Please read our contributing guidelines and submit pull requests.
-
-## License
-
-GPL-3.0 - See [LICENSE](./LICENSE) for details.
-
-## Acknowledgments
-
-- Built for [Astro](https://astro.build/) and [Quarto](https://quarto.org/)
-- Inspired by the need to combine scientific publishing with modern web development
-
-## Support
-
-- 📖 [Documentation](./docs/)
-- 🐛 [Issue Tracker](https://github.com/aleksanderbl29/astro-loader-quarto/issues)
-- 💬 [Discussions](https://github.com/aleksanderbl29/astro-loader-quarto/discussions)
+[API reference](docs/api.md) · [Field mappings](docs/field-mappings.md) ·
+[Examples](docs/examples.md) · [Development setup](CONTRIBUTING.md)
