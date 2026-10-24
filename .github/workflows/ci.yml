@@ -52,7 +52,7 @@ jobs:
         with:
           version: 11.17.0
       - name: Run formatting
-        run: pnpx prettier . --check
+        run: pnpx prettier@3.6.2 . --check
 
   build-example:
     runs-on: ubuntu-latest
