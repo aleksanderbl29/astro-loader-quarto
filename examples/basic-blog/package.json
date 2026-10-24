@@ -6,12 +6,12 @@
   "scripts": {
     "dev": "astro dev",
     "dev:quarto": "cd quarto && quarto preview",
-    "build": "quarto render quarto && astro build",
+    "build": "astro build",
     "preview": "astro preview",
     "astro": "astro"
   },
   "dependencies": {
-    "astro": "^5.16.0",
+    "astro": "6.0.4",
     "astro-loader-quarto": "file:../..",
     "sharp": "^0.34.5"
   },

@@ -1,147 +1,36 @@
-/**
- * Configuration types for Quarto Loader
- */
-
-import type { z } from "zod";
-
-/**
- * Asset handling strategy
- */
 export type AssetStrategy = "reference" | "copy" | "symlink";
-
-/**
- * Asset handling configuration
- */
 export interface AssetConfig {
+  /** Local assets are copied by default. symlink is unsupported. */
   strategy?: AssetStrategy;
+  /** Namespace below Astro config.publicDir; defaults to quarto-assets. */
   publicDir?: string;
   imageResolver?: (imagePath: string, qmdPath: string) => string;
 }
-
-/**
- * Schema configuration for validation
- */
-export interface SchemaConfig {
-  extend?: z.ZodObject<z.ZodRawShape>;
-  override?: z.ZodObject<z.ZodRawShape>;
-}
-
-/**
- * Default field mappings from Quarto to Astro
- */
-export const DEFAULT_FIELD_MAPPINGS = {
-  title: "title",
-  description: "description",
-  author: "author",
+export type FieldMappings = Record<string, string>;
+export const DEFAULT_FIELD_MAPPINGS: FieldMappings = {
   date: "pubDate",
   "date-modified": "updatedDate",
+  "last-modified": "updatedDate",
   image: "heroImage",
-  categories: "categories",
-  tags: "tags",
-  draft: "draft",
-} as const;
-
-/**
- * Field mappings type
- */
-export type FieldMappings = Record<string, string>;
-
-/**
- * Main loader configuration
- */
+};
 export interface QuartoLoaderConfig {
-  /**
-   * Path to Quarto project source directory
-   */
+  /** Relative to Astro config.root. */
   quartoRoot: string;
-
-  /**
-   * Path to rendered output directory (defaults to _site or docs)
-   */
   outputDir?: string;
-
-  /**
-   * Auto-render Quarto content before loading
-   * @default false
-   *
-   * When false (default): User must run 'quarto render' separately
-   * When true: Automatically runs 'quarto render' with GFM format
-   * When object: Customize the render command and options
-   *
-   * @example
-   * // Simple enable
-   * autoRender: true
-   *
-   * @example
-   * // Custom options
-   * autoRender: {
-   *   enabled: true,
-   *   command: 'quarto',
-   *   args: ['render', '--quiet'],
-   *   format: 'gfm'
-   * }
-   */
+  pattern?: string | string[];
+  listings?: string | string[];
   autoRender?:
     | boolean
-    | {
-        enabled: boolean;
-        command?: string;
-        args?: string[];
-        format?: string;
-      };
-
-  /**
-   * Which listing(s) to load
-   * - string: Single listing ID
-   * - string[]: Multiple listing IDs
-   * - 'all': Load all listings
-   */
-  listings?: string | string[] | "all";
-
-  /**
-   * Field mappings from Quarto field names to Astro field names
-   * Defaults to match Astro's blog template convention
-   */
+    | { enabled: boolean; command?: string; args?: string[]; format?: string };
   fieldMappings?: FieldMappings;
-
-  /**
-   * Schema customization
-   */
-  schema?: SchemaConfig;
-
-  /**
-   * Filter function for conditional inclusion
-   * Runs after field mapping
-   */
   filter?: (entry: Record<string, unknown>) => boolean | Promise<boolean>;
-
-  /**
-   * Transform function for custom processing
-   * Runs after field mapping and filter
-   */
   transform?: (
     entry: Record<string, unknown>,
   ) => Record<string, unknown> | Promise<Record<string, unknown>>;
-
-  /**
-   * Asset handling configuration
-   */
   assets?: AssetConfig;
-
-  /**
-   * Performance options
-   */
+  /** Resolve source .qmd crosslinks to public site URLs. Otherwise they fail. */
+  resolveLink?: (href: string, sourcePath: string) => string | Promise<string>;
+  /** Retained compatibility hints; reconciliation always reads fresh inputs. */
   cache?: boolean;
   parallel?: boolean;
-}
-
-/**
- * Normalization options for metadata processing
- */
-export interface NormalizationOptions {
-  basePath: string;
-  outputDir: string;
-  fieldMappings: FieldMappings;
-  slugify?: (title: string) => string;
-  imageResolver?: (imagePath: string, qmdPath: string) => string;
 }

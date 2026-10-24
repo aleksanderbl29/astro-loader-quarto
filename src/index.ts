@@ -26,7 +26,6 @@ export type {
   QuartoListing,
   AssetStrategy,
   AssetConfig,
-  SchemaConfig,
   FieldMappings,
   QmdDocument,
   ParsedMetadata,

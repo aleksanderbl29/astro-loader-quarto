@@ -58,7 +58,7 @@ export async function renderQuarto(
   }
 
   // Build command arguments
-  const args = options.args || ["render"];
+  const args = [...(options.args || ["render"])];
 
   // Add format flag if specified
   if (options.format) {

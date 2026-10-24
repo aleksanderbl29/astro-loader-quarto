@@ -15,9 +15,7 @@ export type {
   QuartoLoaderConfig,
   AssetStrategy,
   AssetConfig,
-  SchemaConfig,
   FieldMappings,
-  NormalizationOptions,
 } from "./loader-config.js";
 
 export { DEFAULT_FIELD_MAPPINGS } from "./loader-config.js";
