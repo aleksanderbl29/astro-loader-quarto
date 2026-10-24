@@ -65,7 +65,10 @@ export function quartoLoader(options: QuartoLoaderConfig): Loader {
           renderArtifacts = sources.flatMap((path) => [
             path.replace(/\.qmd$/, ".quarto_ipynb"),
             path.replace(/\.qmd$/, ".md"),
+            path.replace(/\.qmd$/, ".knit.md"),
+            path.replace(/\.qmd$/, ".utf8.md"),
             path.replace(/\.qmd$/, "_files"),
+            path.replace(/\.qmd$/, "_cache"),
           ]);
           await renderQuarto(root, {
             ...renderOptions,

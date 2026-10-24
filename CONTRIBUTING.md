@@ -21,6 +21,9 @@ and builds an Astro 6 fixture using `render(entry)`. It checks native MDX and
 Markdown alongside Quarto, caller schema defaults/errors, emitted resources,
 missing output, duplicate IDs, persisted-store deletion, and development
 watcher recovery. No mocked renderer replaces the successful integration path.
+The auto-render checks also execute a base R document with knitr caching through
+Quarto's bundled R environment. Generated caches and intermediate Markdown must
+not trigger another render.
 
 The example uses committed GFM for ordinary Astro builds:
 

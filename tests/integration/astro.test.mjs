@@ -388,4 +388,71 @@ describe.sequential("real Quarto → Astro 6 render(entry)", () => {
       await writeFile(configPath, original);
     }
   }, 120000);
+  it("ignores knitr cache and intermediate files during R auto-rendering", async () => {
+    const configPath = join(site, "src/content.config.ts");
+    const projectPath = join(site, "quarto/_quarto.yml");
+    const originalConfig = await readFile(configPath, "utf8");
+    const originalProject = await readFile(projectPath, "utf8");
+    await writeFile(
+      configPath,
+      originalConfig.replace("autoRender:false", "autoRender:true"),
+    );
+    await writeFile(
+      projectPath,
+      originalProject.replace("jupyter: python3\n", ""),
+    );
+    const source = join(site, "quarto/guides/sample/index.qmd");
+    const document = `---
+title: R cache guide
+slug: computed
+date: 2025-01-02
+execute:
+  cache: true
+---
+
+\`\`\`{r}
+cat("R-COMPUTED", sum(1:10))
+\`\`\`
+`;
+    await writeFile(source, document);
+    let log = "";
+    const server = spawn(
+      process.execPath,
+      [cli, "dev", "--root", site, "--host", "127.0.0.1", "--port", "4439"],
+      { cwd: repo, stdio: ["ignore", "pipe", "pipe"] },
+    );
+    server.stdout.on("data", (data) => {
+      log += data;
+    });
+    server.stderr.on("data", (data) => {
+      log += data;
+    });
+    async function waitFor(text) {
+      const deadline = Date.now() + 40000;
+      while (Date.now() < deadline) {
+        try {
+          const response = await fetch("http://127.0.0.1:4439/journal/");
+          if (response.ok && (await response.text()).includes(text)) return;
+        } catch {}
+        await new Promise((resolve) => setTimeout(resolve, 200));
+      }
+      throw new Error(`R auto-render did not converge: ${log.slice(-6000)}`);
+    }
+    try {
+      await waitFor("R-COMPUTED 55");
+      expect(
+        (await readdir(join(site, "quarto/guides/sample/index_cache"))).length,
+      ).toBeGreaterThan(0);
+      await writeFile(source, document.replace("1:10", "1:11"));
+      await waitFor("R-COMPUTED 66");
+      expect(log).not.toContain("Quarto reload failed");
+    } finally {
+      if (server.exitCode === null && server.signalCode === null) {
+        server.kill("SIGTERM");
+        await new Promise((resolve) => server.once("exit", resolve));
+      }
+      await writeFile(configPath, originalConfig);
+      await writeFile(projectPath, originalProject);
+    }
+  }, 120000);
 });
