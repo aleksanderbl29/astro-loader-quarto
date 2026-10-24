@@ -23,7 +23,8 @@ Enable your Astro projects to use [Quarto](https://quarto.org/) Listings as Cont
 
 - **Astro**: 4.0 or higher (required for Loader API)
 - **Quarto**: 1.3 or higher
-- **Node.js**: 18 or higher
+- **Node.js**: 22.12 or higher
+- **Astro**: 7.2.8 or higher (Astro 7)
 
 ## Installation
 
